@@ -1,0 +1,723 @@
+[
+ {
+  "appId": 730,
+  "nombre": "Counter-Strike 2",
+  "descripcion": "Shooter táctico competitivo por equipos: terroristas contra antiterroristas en partidas por rondas.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Competitivo",
+   "Multijugador",
+   "Free to play"
+  ]
+ },
+ {
+  "appId": 570,
+  "nombre": "Dota 2",
+  "descripcion": "MOBA de 5 contra 5 donde cada jugador controla un héroe con habilidades únicas.",
+  "categorias": [
+   "Acción",
+   "Estrategia"
+  ],
+  "etiquetas": [
+   "Competitivo",
+   "Multijugador",
+   "Free to play",
+   "Fantasía"
+  ]
+ },
+ {
+  "appId": 1245620,
+  "nombre": "ELDEN RING",
+  "descripcion": "RPG de acción en un vasto mundo abierto creado por FromSoftware y George R. R. Martin.",
+  "categorias": [
+   "Acción",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Souls-like",
+   "Mundo abierto",
+   "Fantasía",
+   "Un jugador",
+   "Difícil"
+  ]
+ },
+ {
+  "appId": 1091500,
+  "nombre": "Cyberpunk 2077",
+  "descripcion": "RPG de acción en mundo abierto ambientado en Night City, una megalópolis obsesionada con el poder y la modificación corporal.",
+  "categorias": [
+   "Acción",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Mundo abierto",
+   "Ciencia ficción",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 292030,
+  "nombre": "The Witcher 3: Wild Hunt",
+  "descripcion": "Geralt de Rivia busca a Ciri en un mundo abierto de fantasía oscura lleno de decisiones con consecuencias.",
+  "categorias": [
+   "RPG",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Mundo abierto",
+   "Fantasía",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 1086940,
+  "nombre": "Baldur's Gate 3",
+  "descripcion": "RPG por turnos basado en Dungeons & Dragons 5e con cooperativo y decisiones profundas.",
+  "categorias": [
+   "RPG",
+   "Estrategia"
+  ],
+  "etiquetas": [
+   "Fantasía",
+   "Cooperativo",
+   "Por turnos",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 413150,
+  "nombre": "Stardew Valley",
+  "descripcion": "Heredás la granja de tu abuelo y construís una nueva vida en Pelican Town.",
+  "categorias": [
+   "Simulación",
+   "Indie",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Relajante",
+   "Cooperativo",
+   "Pixel art",
+   "Agricultura"
+  ]
+ },
+ {
+  "appId": 367520,
+  "nombre": "Hollow Knight",
+  "descripcion": "Metroidvania desafiante en el reino subterráneo de Hallownest.",
+  "categorias": [
+   "Acción",
+   "Aventura",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Metroidvania",
+   "Difícil",
+   "Un jugador",
+   "2D"
+  ]
+ },
+ {
+  "appId": 1145360,
+  "nombre": "Hades",
+  "descripcion": "Roguelike de acción: Zagreo intenta escapar del Inframundo enfrentando a dioses del Olimpo.",
+  "categorias": [
+   "Acción",
+   "Indie",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Mitología",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 105600,
+  "nombre": "Terraria",
+  "descripcion": "Cavá, luchá, explorá y construí en un mundo 2D generado proceduralmente.",
+  "categorias": [
+   "Acción",
+   "Aventura",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Sandbox",
+   "Supervivencia",
+   "Cooperativo",
+   "Pixel art",
+   "Construcción"
+  ]
+ },
+ {
+  "appId": 271590,
+  "nombre": "Grand Theft Auto V",
+  "descripcion": "Tres criminales muy distintos planean golpes en Los Santos; incluye GTA Online.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Mundo abierto",
+   "Multijugador",
+   "Shooter",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 1174180,
+  "nombre": "Red Dead Redemption 2",
+  "descripcion": "Arthur Morgan y la banda de Van der Linde huyen por el ocaso del Salvaje Oeste.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Mundo abierto",
+   "Western",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 620,
+  "nombre": "Portal 2",
+  "descripcion": "Puzzles con portales y física junto a GLaDOS y Wheatley, con campaña cooperativa.",
+  "categorias": [
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Puzzle",
+   "Cooperativo",
+   "Ciencia ficción",
+   "Humor"
+  ]
+ },
+ {
+  "appId": 550,
+  "nombre": "Left 4 Dead 2",
+  "descripcion": "Shooter cooperativo de zombis para cuatro jugadores en el sur de Estados Unidos.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Cooperativo",
+   "Zombis",
+   "Multijugador"
+  ]
+ },
+ {
+  "appId": 440,
+  "nombre": "Team Fortress 2",
+  "descripcion": "Shooter por clases con estilo caricaturesco y modos por equipos.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Multijugador",
+   "Free to play",
+   "Humor"
+  ]
+ },
+ {
+  "appId": 252490,
+  "nombre": "Rust",
+  "descripcion": "Supervivencia multijugador: recolectá, construí y defendete de otros jugadores.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Supervivencia",
+   "Multijugador",
+   "Construcción",
+   "Mundo abierto"
+  ]
+ },
+ {
+  "appId": 892970,
+  "nombre": "Valheim",
+  "descripcion": "Supervivencia y exploración vikinga en un purgatorio generado proceduralmente.",
+  "categorias": [
+   "Aventura",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Supervivencia",
+   "Cooperativo",
+   "Construcción",
+   "Mundo abierto"
+  ]
+ },
+ {
+  "appId": 1172470,
+  "nombre": "Apex Legends",
+  "descripcion": "Battle royale por escuadras con leyendas de habilidades únicas.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Battle royale",
+   "Free to play",
+   "Competitivo"
+  ]
+ },
+ {
+  "appId": 578080,
+  "nombre": "PUBG: BATTLEGROUNDS",
+  "descripcion": "Battle royale realista: 100 jugadores, un solo ganador.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Battle royale",
+   "Free to play",
+   "Multijugador"
+  ]
+ },
+ {
+  "appId": 1593500,
+  "nombre": "God of War",
+  "descripcion": "Kratos y su hijo Atreus viajan por los reinos nórdicos.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Mitología",
+   "Un jugador",
+   "Historia rica",
+   "Hack and slash"
+  ]
+ },
+ {
+  "appId": 814380,
+  "nombre": "Sekiro: Shadows Die Twice",
+  "descripcion": "Acción en el Japón Sengoku; un shinobi busca venganza y redención.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Souls-like",
+   "Difícil",
+   "Un jugador",
+   "Ninja"
+  ]
+ },
+ {
+  "appId": 374320,
+  "nombre": "DARK SOULS III",
+  "descripcion": "El capítulo final de la saga Dark Souls: oscuridad, desafío y fantasía.",
+  "categorias": [
+   "Acción",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Souls-like",
+   "Difícil",
+   "Fantasía",
+   "Cooperativo"
+  ]
+ },
+ {
+  "appId": 1868140,
+  "nombre": "DAVE THE DIVER",
+  "descripcion": "Buceá de día en el Agujero Azul y gestioná un restaurante de sushi de noche.",
+  "categorias": [
+   "Aventura",
+   "Indie",
+   "Simulación"
+  ],
+  "etiquetas": [
+   "Pixel art",
+   "Gestión",
+   "Relajante",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 646570,
+  "nombre": "Slay the Spire",
+  "descripcion": "Construcción de mazos roguelike: escalá la torre armando tu mazo carta por carta.",
+  "categorias": [
+   "Estrategia",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Cartas",
+   "Por turnos",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 294100,
+  "nombre": "RimWorld",
+  "descripcion": "Simulador de colonias guiado por una IA narradora en un planeta lejano.",
+  "categorias": [
+   "Estrategia",
+   "Simulación",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Construcción",
+   "Supervivencia",
+   "Ciencia ficción",
+   "Gestión"
+  ]
+ },
+ {
+  "appId": 427520,
+  "nombre": "Factorio",
+  "descripcion": "Construí y automatizá fábricas cada vez más complejas en un planeta alienígena.",
+  "categorias": [
+   "Estrategia",
+   "Simulación"
+  ],
+  "etiquetas": [
+   "Automatización",
+   "Construcción",
+   "Cooperativo",
+   "Gestión"
+  ]
+ },
+ {
+  "appId": 289070,
+  "nombre": "Sid Meier's Civilization VI",
+  "descripcion": "Construí un imperio que resista el paso del tiempo, por turnos.",
+  "categorias": [
+   "Estrategia"
+  ],
+  "etiquetas": [
+   "Por turnos",
+   "Historia",
+   "Multijugador",
+   "4X"
+  ]
+ },
+ {
+  "appId": 255710,
+  "nombre": "Cities: Skylines",
+  "descripcion": "Simulador de construcción y gestión de ciudades modernas.",
+  "categorias": [
+   "Simulación",
+   "Estrategia"
+  ],
+  "etiquetas": [
+   "Construcción",
+   "Gestión",
+   "Relajante",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 1222670,
+  "nombre": "The Sims 4",
+  "descripcion": "Creá Sims y controlá sus vidas en mundos llenos de posibilidades.",
+  "categorias": [
+   "Simulación",
+   "Casual"
+  ],
+  "etiquetas": [
+   "Relajante",
+   "Free to play",
+   "Vida",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 945360,
+  "nombre": "Among Us",
+  "descripcion": "Juego social de deducción: descubrí al impostor antes de que sea tarde.",
+  "categorias": [
+   "Casual"
+  ],
+  "etiquetas": [
+   "Multijugador",
+   "Deducción social",
+   "Humor",
+   "Espacio"
+  ]
+ },
+ {
+  "appId": 1966720,
+  "nombre": "Lethal Company",
+  "descripcion": "Terror cooperativo: recolectá chatarra en lunas abandonadas para la Compañía.",
+  "categorias": [
+   "Acción",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Terror",
+   "Cooperativo",
+   "Multijugador",
+   "Humor"
+  ]
+ },
+ {
+  "appId": 739630,
+  "nombre": "Phasmophobia",
+  "descripcion": "Investigación paranormal cooperativa de terror psicológico.",
+  "categorias": [
+   "Acción",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Terror",
+   "Cooperativo",
+   "Multijugador",
+   "Investigación"
+  ]
+ },
+ {
+  "appId": 553850,
+  "nombre": "HELLDIVERS 2",
+  "descripcion": "Shooter cooperativo: extendé la democracia gestionada por la galaxia.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Cooperativo",
+   "Ciencia ficción",
+   "Multijugador"
+  ]
+ },
+ {
+  "appId": 1172620,
+  "nombre": "Sea of Thieves",
+  "descripcion": "Aventura pirata compartida: navegá, saqueá y combatí en alta mar.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Piratas",
+   "Cooperativo",
+   "Mundo abierto",
+   "Multijugador"
+  ]
+ },
+ {
+  "appId": 504230,
+  "nombre": "Celeste",
+  "descripcion": "Plataformas preciso: ayudá a Madeline a sobrevivir a sus demonios internos subiendo la montaña.",
+  "categorias": [
+   "Aventura",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Plataformas",
+   "Difícil",
+   "Pixel art",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 1794680,
+  "nombre": "Vampire Survivors",
+  "descripcion": "Roguelite de horda: sobreviví a oleadas de monstruos con armas automáticas.",
+  "categorias": [
+   "Acción",
+   "Indie",
+   "Casual"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Pixel art",
+   "Un jugador",
+   "Bullet hell"
+  ]
+ },
+ {
+  "appId": 275850,
+  "nombre": "No Man's Sky",
+  "descripcion": "Exploración espacial de un universo infinito generado proceduralmente.",
+  "categorias": [
+   "Aventura",
+   "Acción"
+  ],
+  "etiquetas": [
+   "Espacio",
+   "Supervivencia",
+   "Ciencia ficción",
+   "Mundo abierto"
+  ]
+ },
+ {
+  "appId": 2358720,
+  "nombre": "Black Myth: Wukong",
+  "descripcion": "RPG de acción basado en el clásico chino Viaje al Oeste.",
+  "categorias": [
+   "Acción",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Mitología",
+   "Souls-like",
+   "Un jugador",
+   "Difícil"
+  ]
+ },
+ {
+  "appId": 1203220,
+  "nombre": "NARAKA: BLADEPOINT",
+  "descripcion": "Battle royale de combate cuerpo a cuerpo con artes marciales y gancho.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Battle royale",
+   "Free to play",
+   "Multijugador",
+   "Artes marciales"
+  ]
+ },
+ {
+  "appId": 1938090,
+  "nombre": "Call of Duty",
+  "descripcion": "Campañas, multijugador y Zombis de la saga Call of Duty.",
+  "categorias": [
+   "Acción"
+  ],
+  "etiquetas": [
+   "Shooter",
+   "Multijugador",
+   "Competitivo",
+   "Bélico"
+  ]
+ },
+ {
+  "appId": 2050650,
+  "nombre": "Resident Evil 4",
+  "descripcion": "Remake del clásico de terror y acción: Leon S. Kennedy rescata a la hija del presidente.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Terror",
+   "Un jugador",
+   "Supervivencia",
+   "Zombis"
+  ]
+ },
+ {
+  "appId": 1817070,
+  "nombre": "Marvel's Spider-Man Remastered",
+  "descripcion": "Balanceate por Nueva York como Peter Parker en un mundo abierto.",
+  "categorias": [
+   "Acción",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Superhéroes",
+   "Mundo abierto",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 990080,
+  "nombre": "Hogwarts Legacy",
+  "descripcion": "RPG de acción en el mundo mágico del siglo XIX.",
+  "categorias": [
+   "Acción",
+   "RPG",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Mundo abierto",
+   "Magia",
+   "Fantasía",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 632360,
+  "nombre": "Risk of Rain 2",
+  "descripcion": "Roguelike de acción en tercera persona con cooperativo para hasta cuatro jugadores.",
+  "categorias": [
+   "Acción",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Cooperativo",
+   "Shooter",
+   "Ciencia ficción"
+  ]
+ },
+ {
+  "appId": 588650,
+  "nombre": "Dead Cells",
+  "descripcion": "Roguevania de acción: explorá un castillo cambiante muriendo y aprendiendo.",
+  "categorias": [
+   "Acción",
+   "Indie"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Metroidvania",
+   "Pixel art",
+   "Difícil"
+  ]
+ },
+ {
+  "appId": 1145350,
+  "nombre": "Hades II",
+  "descripcion": "Melínoe, princesa del Inframundo, combate contra el Titán del Tiempo.",
+  "categorias": [
+   "Acción",
+   "Indie",
+   "RPG"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Mitología",
+   "Un jugador",
+   "Historia rica"
+  ]
+ },
+ {
+  "appId": 1716740,
+  "nombre": "Starfield",
+  "descripcion": "RPG espacial de Bethesda: explorá más de mil planetas.",
+  "categorias": [
+   "RPG",
+   "Aventura"
+  ],
+  "etiquetas": [
+   "Espacio",
+   "Ciencia ficción",
+   "Mundo abierto",
+   "Un jugador"
+  ]
+ },
+ {
+  "appId": 2379780,
+  "nombre": "Balatro",
+  "descripcion": "Roguelike de construcción de mazos inspirado en el póker.",
+  "categorias": [
+   "Estrategia",
+   "Indie",
+   "Casual"
+  ],
+  "etiquetas": [
+   "Roguelike",
+   "Cartas",
+   "Un jugador",
+   "Pixel art"
+  ]
+ }
+]

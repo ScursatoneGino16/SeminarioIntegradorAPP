@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17
+    container_name: resenas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resenas
+      POSTGRES_PASSWORD: resenas
+      POSTGRES_DB: resenas
+    ports:
+      - "5433:5432"
+    volumes:
+      - resenas-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resenas"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  resenas-data:

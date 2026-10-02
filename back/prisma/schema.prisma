@@ -1,0 +1,145 @@
+// Modelo de datos basado en el DER del proyecto "Sistema de Reseñas".
+// Los SteamID son enteros de 64 bits, por eso se guardan como texto.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  steamId           String   @id @map("steam_id") @db.VarChar(20)
+  nombreUsuario     String   @map("nombre_usuario") @db.VarChar(100)
+  avatarUrl         String?  @map("avatar_url")
+  bibliotecaPublica Boolean  @default(false) @map("biblioteca_publica")
+  esAdmin           Boolean  @default(false) @map("es_admin")
+  fechaAlta         DateTime @default(now()) @map("fecha_alta")
+  ultimoAcceso      DateTime @default(now()) @map("ultimo_acceso")
+  // Última vez que se leyeron nombre y avatar desde Steam
+  perfilActualizadoEn DateTime? @map("perfil_actualizado_en")
+
+  biblioteca   UsuarioXVideojuego[]
+  resenas      Resena[]
+  valoraciones ValoracionXResena[]
+
+  @@map("usuario")
+}
+
+model Videojuego {
+  appId       Int     @id @map("app_id")
+  nombre      String  @map("nombre_videojuego") @db.VarChar(200)
+  descripcion String  @default("")
+  imagenUrl   String? @map("imagen_url")
+  // Popularidad en Steam (reseñas positivas + negativas según el dataset); ordena el catálogo
+  votosSteam  Int     @default(0) @map("votos_steam")
+
+  categorias  VideojuegoXCategoria[]
+  etiquetas   VideojuegoXEtiqueta[]
+  resenas     Resena[]
+  propietarios UsuarioXVideojuego[]
+
+  @@index([nombre])
+  @@map("videojuego")
+}
+
+model Categoria {
+  categoriaId Int    @id @default(autoincrement()) @map("categoria_id")
+  nombre      String @unique @map("nombre_categoria") @db.VarChar(100)
+
+  videojuegos VideojuegoXCategoria[]
+
+  @@map("categoria")
+}
+
+model Etiqueta {
+  etiquetaId Int    @id @default(autoincrement()) @map("etiqueta_id")
+  nombre     String @unique @map("nombre_etiqueta") @db.VarChar(100)
+
+  videojuegos VideojuegoXEtiqueta[]
+
+  @@map("etiqueta")
+}
+
+model VideojuegoXCategoria {
+  appId       Int @map("app_id")
+  categoriaId Int @map("categoria_id")
+
+  videojuego Videojuego @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  categoria  Categoria  @relation(fields: [categoriaId], references: [categoriaId], onDelete: Cascade)
+
+  @@id([appId, categoriaId])
+  @@map("videojuego_x_categoria")
+}
+
+model VideojuegoXEtiqueta {
+  appId      Int @map("app_id")
+  etiquetaId Int @map("etiqueta_id")
+
+  videojuego Videojuego @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  etiqueta   Etiqueta   @relation(fields: [etiquetaId], references: [etiquetaId], onDelete: Cascade)
+
+  @@id([appId, etiquetaId])
+  @@map("videojuego_x_etiqueta")
+}
+
+// Biblioteca del usuario importada desde Steam (última lectura conocida).
+// Se usa como respaldo cuando Steam no responde (RNF 6).
+model UsuarioXVideojuego {
+  steamId       String   @map("steam_id") @db.VarChar(20)
+  appId         Int      @map("app_id")
+  horasJugadas  Float    @default(0) @map("horas_jugadas")
+  actualizadoEn DateTime @default(now()) @updatedAt @map("actualizado_en")
+
+  usuario    Usuario    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  videojuego Videojuego @relation(fields: [appId], references: [appId], onDelete: Cascade)
+
+  @@id([appId, steamId])
+  @@map("usuario_x_videojuego")
+}
+
+model Resena {
+  resenaId         Int      @id @default(autoincrement()) @map("resena_id")
+  steamId          String   @map("steam_id") @db.VarChar(20)
+  appId            Int      @map("app_id")
+  calificacion     Int // 1 a 5 estrellas (CHECK en la migración)
+  comentario       String   @db.VarChar(1200)
+  horasAlComentar  Float    @map("horas_al_comentar") // RNF 10: valor histórico
+  fechaCreacion    DateTime @default(now()) @map("fecha_creacion")
+  fechaModificacion DateTime? @map("fecha_modificacion")
+  cantLike         Int      @default(0) @map("cant_like")
+  cantDislike      Int      @default(0) @map("cant_dislike")
+
+  usuario      Usuario             @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  videojuego   Videojuego          @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  valoraciones ValoracionXResena[]
+
+  // Una reseña por usuario y videojuego (RNF 8)
+  @@unique([steamId, appId])
+  @@index([appId, cantLike(sort: Desc)])
+  @@map("resena")
+}
+
+model ValoracionXResena {
+  steamId  String @map("steam_id") @db.VarChar(20)
+  resenaId Int    @map("resena_id")
+  esLike   Boolean @map("es_like")
+
+  usuario Usuario @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  resena  Resena  @relation(fields: [resenaId], references: [resenaId], onDelete: Cascade)
+
+  @@id([steamId, resenaId])
+  @@map("valoracion_x_resena")
+}
+
+// Tabla de sesiones usada por connect-pg-simple (RNF 3).
+model Session {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
+  @@map("session")
+}
