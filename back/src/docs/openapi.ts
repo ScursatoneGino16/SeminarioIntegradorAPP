@@ -51,7 +51,7 @@ export const documentoOpenApi = {
   openapi: '3.1.0',
   info: {
     title: 'Sistema de Reseñas de Videojuegos de Steam — API',
-    version: '1.0.0',
+    version: '0.2.0',
     description: [
       'API del Seminario Integrador (Grupo 08).',
       '',
@@ -140,6 +140,47 @@ export const documentoOpenApi = {
                 horasJugadas: { type: 'number' },
               },
             },
+          },
+        },
+      },
+      PerfilSteam: {
+        type: 'object',
+        properties: {
+          nivel: { type: ['integer', 'null'], example: 49 },
+          experiencia: {
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  actual: { type: 'integer', description: 'EXP total acumulada', example: 5320 },
+                  inicioNivel: { type: 'integer', description: 'EXP total en la que empieza el nivel actual', example: 5100 },
+                  faltante: { type: 'integer', description: 'EXP que falta para el próximo nivel', example: 380 },
+                },
+              },
+              { type: 'null' },
+            ],
+          },
+          cuentaCreada: { type: ['string', 'null'], format: 'date-time' },
+          juegos: { type: ['integer', 'null'] },
+          horasTotales: { type: ['integer', 'null'] },
+          avatarAnimado: {
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  animado: { type: 'string', description: 'GIF animado' },
+                  fijo: { type: ['string', 'null'], description: 'Versión fija (JPG)' },
+                },
+              },
+              { type: 'null' },
+            ],
+          },
+          marcoAvatar: { type: ['string', 'null'], description: 'URL del marco de avatar equipado (APNG animado si se mueve)' },
+          fondoPerfil: {
+            oneOf: [
+              { type: 'object', properties: { imagen: { type: 'string' }, video: { type: ['string', 'null'] } } },
+              { type: 'null' },
+            ],
           },
         },
       },
@@ -268,6 +309,24 @@ export const documentoOpenApi = {
         summary: 'Consultar mi biblioteca (CU 6)',
         description: 'Sincroniza la biblioteca y las horas de juego desde Steam (máx. 5 s). Si Steam falla, devuelve la última copia guardada con `desdeCache: true`.',
         responses: { 200: ok('Biblioteca', ref('Biblioteca')), ...errores },
+      },
+    },
+    '/api/usuarios/{steamId}/steam': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Datos del perfil de Steam',
+        description: [
+          'Nivel y experiencia (`GetBadges`), antigüedad de la cuenta (`GetPlayerSummaries`), juegos y horas totales (`GetOwnedGames`),',
+          'y el avatar animado, el marco de avatar y el fondo de perfil equipados (`GetProfileItemsEquipped`, endpoint no documentado de Steam).',
+          'Cada dato se pide por separado con un máximo de 5 s: si Steam falla o el perfil es privado, ese dato vuelve en null (RNF 6).',
+          'La respuesta se guarda en memoria 30 minutos.',
+        ].join(' '),
+        parameters: [pathParam('steamId', 'SteamID de 64 bits', 'string')],
+        responses: {
+          200: ok('Perfil de Steam', ref('PerfilSteam')),
+          ...errores,
+          404: error('Usuario no encontrado'),
+        },
       },
     },
     '/api/usuarios/{steamId}': {

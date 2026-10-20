@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { LinkBatalla } from '../animaciones';
 import { api, type Biblioteca } from '../api';
 import { Portada } from '../components/Portada';
+import { Icono } from '../components/PixelArte';
 import { Aviso } from '../components/Aviso';
 import { fecha, horas } from '../formato';
 
@@ -27,15 +28,13 @@ export default function BibliotecaPagina() {
   return (
     <div className="pagina-biblioteca">
       <div className="titulo-con-accion">
-        <h1>Mi biblioteca</h1>
+        <h1>
+          <Icono nombre="cofre" alto={24} /> Mi biblioteca
+        </h1>
         <button className="btn btn-secundario" onClick={cargar} disabled={cargando}>
           {cargando ? 'Consultando Steam…' : 'Actualizar desde Steam'}
         </button>
       </div>
-      <p className="texto-suave texto-chico">
-        Juegos de tu biblioteca de Steam que forman parte del catálogo, con tus horas de juego.
-      </p>
-
       {error && <Aviso tipo="error">{error}</Aviso>}
       {bib?.desdeCache && (
         <Aviso tipo="alerta">
@@ -65,11 +64,11 @@ export default function BibliotecaPagina() {
             <ul className="lista-biblioteca">
               {juegos.map((j) => (
                 <li key={j.appId}>
-                  <Link to={`/videojuegos/${j.appId}`} className="item-biblioteca">
+                  <LinkBatalla to={`/videojuegos/${j.appId}`} className="item-biblioteca">
                     <Portada url={j.imagenUrl} nombre={j.nombre} className="portada-mini" />
                     <span className="item-nombre">{j.nombre}</span>
                     <span className="item-horas">{horas(j.horasJugadas)}</span>
-                  </Link>
+                  </LinkBatalla>
                 </li>
               ))}
             </ul>

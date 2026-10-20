@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { useSesion } from '../sesion';
 import { Aviso } from '../components/Aviso';
+import { Estrellas } from '../components/Estrellas';
 
 const ERRORES: Record<string, string> = {
   steam_no_disponible: 'Steam no respondió a tiempo. Probá de nuevo en unos minutos.',
@@ -41,8 +42,11 @@ export default function Login() {
   return (
     <div className="login">
       <section className="login-tarjeta">
-        <div className="login-logo">★</div>
-        <h1>Reseñas de juegos de Steam</h1>
+        <div className="login-logo">
+          <Estrellas valor={5} tam={30} />
+        </div>
+        <h1>Reseñas</h1>
+        <p className="login-subtitulo">— Crónicas de Steam —</p>
         <p className="texto-suave">
           Consultá el catálogo, leé lo que opina la comunidad y publicá reseñas de los juegos de tu biblioteca, junto con
           tus horas de juego.
@@ -56,12 +60,6 @@ export default function Login() {
         {codigoError && <Aviso tipo="error">{ERRORES[codigoError] ?? 'No se pudo iniciar sesión.'}</Aviso>}
 
         <a className="btn btn-steam" href="/api/auth/steam">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
-            <circle cx="12" cy="12" r="11" fill="currentColor" opacity=".15" />
-            <circle cx="15.5" cy="9" r="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
-            <circle cx="8.5" cy="15.5" r="2.2" fill="currentColor" />
-            <path d="M8.5 15.5 13.5 11" stroke="currentColor" strokeWidth="1.8" />
-          </svg>
           Iniciar sesión con Steam
         </a>
         <p className="texto-chico texto-suave">
@@ -70,15 +68,17 @@ export default function Login() {
 
         {estado?.modoSimulado && (
           <div className="login-dev">
-            <h2>Modo simulado</h2>
+            <h2>Continuar partida</h2>
             <p className="texto-chico texto-suave">
               No hay <code>STEAM_API_KEY</code> configurada: la biblioteca y las horas se simulan. Podés entrar con un
-              SteamID de prueba.
+              SteamID de prueba (modo simulado).
             </p>
             <div className="perfiles-prueba">
-              {PERFILES_PRUEBA.map((p) => (
+              {PERFILES_PRUEBA.map((p, i) => (
                 <button key={p.steamId} className="perfil-prueba" onClick={() => void entrarSimulado(p.steamId, p.nombre)}>
-                  <strong>{p.nombre}</strong>
+                  <strong>
+                    Ranura {i + 1} · {p.nombre}
+                  </strong>
                   <span>{p.desc}</span>
                 </button>
               ))}
@@ -98,6 +98,7 @@ export default function Login() {
             {error && <p className="error-chico">{error}</p>}
           </div>
         )}
+        <p className="copyright">© 2026 Grupo 08 · Seminario Integrador</p>
       </section>
     </div>
   );

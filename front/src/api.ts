@@ -17,6 +17,18 @@ export interface Perfil {
   _count: { resenas: number };
 }
 
+export interface PerfilSteam {
+  nivel: number | null;
+  /** EXP total, EXP donde empieza el nivel actual y EXP que falta para el próximo. */
+  experiencia: { actual: number; inicioNivel: number; faltante: number } | null;
+  cuentaCreada: string | null;
+  juegos: number | null;
+  horasTotales: number | null;
+  avatarAnimado: { animado: string; fijo: string | null } | null;
+  marcoAvatar: string | null;
+  fondoPerfil: { imagen: string; video: string | null } | null;
+}
+
 export interface Categoria {
   categoriaId: number;
   nombre: string;
@@ -123,6 +135,7 @@ export const api = {
   logout: () => pedir<void>('POST', '/auth/logout'),
 
   perfil: (steamId: string) => pedir<Perfil>('GET', `/usuarios/${steamId}`),
+  perfilSteam: (steamId: string) => pedir<PerfilSteam>('GET', `/usuarios/${steamId}/steam`),
   biblioteca: () => pedir<Biblioteca>('GET', '/usuarios/me/biblioteca'),
 
   catalogo: (f: { q?: string; categorias?: number[]; etiquetas?: number[]; orden?: string; pagina?: number; tamanio?: number }) =>

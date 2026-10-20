@@ -66,13 +66,12 @@ export default function VideojuegoPagina() {
   return (
     <div className="pagina-juego">
       <Link to="/" className="volver">
-        ← Catálogo
+        ◀ Catálogo
       </Link>
       <section className="juego-cabecera">
         <Portada url={juego.imagenUrl} nombre={juego.nombre} className="portada-grande" />
         <div className="juego-info">
           <h1>{juego.nombre}</h1>
-          <p className="texto-suave texto-chico">AppID {juego.appId}</p>
           <div className="juego-puntaje">
             {juego.promedioCalificacion != null ? (
               <>
@@ -107,11 +106,6 @@ export default function VideojuegoPagina() {
 
       <section className="panel">
         <h2>Tu reseña</h2>
-        {mia && !editando && (
-          <p className="texto-suave texto-chico">
-            Ya reseñaste este juego. Podés editarla o eliminarla; las horas registradas se mantienen.
-          </p>
-        )}
         {mia && editando && (
           <ResenaForm
             inicial={mia}
@@ -130,20 +124,11 @@ export default function VideojuegoPagina() {
             </button>
           </div>
         )}
-        {!mia && (
-          <>
-            <p className="texto-suave texto-chico">
-              Solo podés reseñar juegos de tu biblioteca de Steam (debe ser pública). Al publicar guardamos tus horas de
-              juego actuales.
-            </p>
-            <ResenaForm textoBoton="Publicar reseña" onEnviar={publicar} />
-          </>
-        )}
+        {!mia && <ResenaForm textoBoton="Publicar reseña" onEnviar={publicar} />}
       </section>
 
       <section>
         <h2>Reseñas de la comunidad</h2>
-        <p className="texto-suave texto-chico">Ordenadas por cantidad de “Me gusta”.</p>
         {resenas && resenas.items.length === 0 && <div className="vacio">Nadie reseñó este juego todavía. ¡Sé el primero!</div>}
         <div className="lista-resenas">
           {resenas?.items.map((r) => (

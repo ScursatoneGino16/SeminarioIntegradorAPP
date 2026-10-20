@@ -14,6 +14,7 @@ import { ErrorApp } from '../../shared/errores.js';
 import { requiereAutenticacion, usuarioActual } from './sesion.js';
 import {
   obtenerPerfil,
+  perfilSteam,
   obtenerUsuario,
   refrescarPerfilSiCorresponde,
   registrarIngreso,
@@ -111,6 +112,10 @@ usuarioRouter.use(requiereAutenticacion);
 
 usuarioRouter.get('/me/biblioteca', async (req, res) => {
   res.json(await sincronizarBiblioteca(usuarioActual(req)));
+});
+
+usuarioRouter.get('/:steamId/steam', async (req, res) => {
+  res.json(await perfilSteam(req.params.steamId));
 });
 
 usuarioRouter.get('/:steamId', async (req, res) => {

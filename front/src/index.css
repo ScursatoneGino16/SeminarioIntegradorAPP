@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./estilos.css" layer(base);
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-pixel);
+    /* DotGothic16: pixelada estilo RPG japonés y con todas las vocales acentuadas */
+    --font-sans: 'DotGothic16', monospace;
+    /* Tiny5: pixelada compacta de menú de SNES, con mayúsculas acentuadas */
+    --font-pixel: 'Tiny5', monospace;
+    /* Jacquard 24: gótica pixelada para títulos de fantasía */
+    --font-titulo: 'Jacquard 24', serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Paleta "RPG clásico": ventanas azules con marco blanco (Final Fantasy / Dragon Quest),
+   oro para lo destacado y colores de HP/MP para estados. La app es solo oscura. */
+:root,
+.dark {
+    --background: #0a0a1f;
+    --foreground: #f8f8f8;
+    --card: #142090;
+    --card-foreground: #f8f8f8;
+    --popover: #142090;
+    --popover-foreground: #f8f8f8;
+    --primary: #ffd447;
+    --primary-foreground: #1f1600;
+    --secondary: #2b3fc4;
+    --secondary-foreground: #f8f8f8;
+    --muted: #0e1a73;
+    --muted-foreground: #aab4ff;
+    --accent: #6fd3ff;
+    --accent-foreground: #04040f;
+    --destructive: #ff5d5d;
+    --border: #f0f0f0;
+    --input: #0e1a73;
+    /* Color de los bordes pixelados de 8bitcn en modo oscuro: el marco blanco de las ventanas */
+    --ring: #f0f0f0;
+    --chart-1: #ffd447;
+    --chart-2: #6fd3ff;
+    --chart-3: #3ddc6b;
+    --chart-4: #ff5d5d;
+    --chart-5: #c58cff;
+    --radius: 0rem;
+    --sidebar: #142090;
+    --sidebar-foreground: #f8f8f8;
+    --sidebar-primary: #ffd447;
+    --sidebar-primary-foreground: #1f1600;
+    --sidebar-accent: #2b3fc4;
+    --sidebar-accent-foreground: #f8f8f8;
+    --sidebar-border: #f0f0f0;
+    --sidebar-ring: #f0f0f0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+  html {
+    @apply font-sans;
+    }
+}
+
+/* El paisaje de fondo es un elemento fijo aparte (.fondo-paisaje en estilos.css) */
+@layer base {
+  body {
+    background-color: #2a1a40;
+  }
+}
+
+/* 8bitcn usa Press Start 2P (sin mayúsculas acentuadas): sus componentes pasan a Tiny5 */
+.retro.retro {
+  font-family: 'Tiny5', monospace;
+  letter-spacing: 0.5px;
+}
+
+@keyframes parpadeo {
+  50% { opacity: 0; }
+}
+@utility parpadeo {
+  animation: parpadeo 1s steps(1) infinite;
+}

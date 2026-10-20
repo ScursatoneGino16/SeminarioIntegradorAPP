@@ -3,13 +3,13 @@ export function Paginacion({ pagina, paginas, onCambiar }: { pagina: number; pag
   return (
     <nav className="paginacion" aria-label="Paginación">
       <button className="btn btn-fantasma btn-chico" disabled={pagina <= 1} onClick={() => onCambiar(pagina - 1)}>
-        ← Anterior
+        ◀ Anterior
       </button>
       <span>
         Página {pagina} de {paginas}
       </span>
       <button className="btn btn-fantasma btn-chico" disabled={pagina >= paginas} onClick={() => onCambiar(pagina + 1)}>
-        Siguiente →
+        Siguiente ▶
       </button>
     </nav>
   );

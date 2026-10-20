@@ -1,12 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { LinkBatalla } from '../animaciones';
 import { api, type Categoria, type Etiqueta, type Pagina, type Videojuego } from '../api';
 import { Portada } from '../components/Portada';
-import { Paginacion } from '../components/Paginacion';
+import { Icono, Mano } from '../components/PixelArte';
 import { Aviso } from '../components/Aviso';
 import { horas } from '../formato';
+import { Chip8bit } from '@/components/Chip8bit';
+import { Button } from '@/components/ui/8bit/button';
+import { Input } from '@/components/ui/8bit/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/8bit/select';
 
 const ids = (s: string | null) => (s ? s.split(',').map(Number).filter(Boolean) : []);
+
+const ORDENES = [
+  ['relevancia', 'Recomendado'],
+  ['votos', 'Más votados'],
+  ['resenas', 'Más reseñados'],
+  ['nombre', 'Nombre A-Z'],
+  ['appId', 'AppID'],
+] as const;
 
 export default function Catalogo() {
   const [params, setParams] = useSearchParams();
@@ -79,91 +92,97 @@ export default function Catalogo() {
   ];
 
   return (
-    <div className="catalogo">
-      <section className="catalogo-cabecera">
+    <div className="flex flex-col gap-8">
+      <section className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h1>Catálogo</h1>
-          {orden === 'relevancia' && (
-            <p className="texto-suave texto-chico sin-margen">
-              Primero tus juegos de Steam, después los más reseñados y los más votados.
-            </p>
-          )}
+          <h1 className="m-0">
+            <Icono nombre="espada" alto={24} /> Catálogo
+          </h1>
         </div>
-        <div className="barra-busqueda">
-          <input
+        <div className="flex w-full flex-wrap items-center gap-5 px-1.5 sm:w-auto">
+          <Input
             type="search"
-            placeholder="Buscar por nombre o AppID…"
+            placeholder="Nombre o AppID…"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             aria-label="Buscar videojuego"
+            className="h-10 min-w-40 flex-1 text-base sm:w-72 sm:flex-none"
           />
-          <select value={orden} onChange={(e) => actualizar({ orden: e.target.value })} aria-label="Ordenar por">
-            <option value="relevancia">Recomendado</option>
-            <option value="votos">Más votados en Steam</option>
-            <option value="resenas">Más reseñados</option>
-            <option value="nombre">Nombre (A-Z)</option>
-            <option value="appId">AppID</option>
-          </select>
+          <Select value={orden} onValueChange={(v) => actualizar({ orden: v })}>
+            <SelectTrigger aria-label="Ordenar por" className="h-10 w-full text-base sm:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ORDENES.map(([valor, texto]) => (
+                <SelectItem key={valor} value={valor} className="retro text-base">
+                  {texto}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </section>
 
-      <section className="filtros" aria-label="Filtros">
-        <div className="grupo-filtro">
-          <span className="filtro-titulo">Categorías</span>
-          <div className="chips">
+      <section aria-label="Filtros" className="ventana flex flex-col gap-5 p-4">
+        <div className="flex flex-col gap-3">
+          <span className="retro text-base text-accent">Categorías</span>
+          <div className="flex flex-wrap gap-3">
             {categorias.map((c) => (
-              <button
+              <Chip8bit
                 key={c.categoriaId}
-                className={`chip ${cats.includes(c.categoriaId) ? 'chip-activo' : ''}`}
-                aria-pressed={cats.includes(c.categoriaId)}
+                activo={cats.includes(c.categoriaId)}
                 onClick={() => actualizar({ categorias: alternar(cats, c.categoriaId) })}
               >
                 {c.nombre}
-              </button>
+              </Chip8bit>
             ))}
           </div>
         </div>
-        <div className="grupo-filtro">
-          <span className="filtro-titulo">
+        <div className="flex flex-col gap-3">
+          <span className="retro flex items-center gap-2 text-base text-accent">
             Etiquetas
-            <button className="btn-link" onClick={() => setVerEtiquetas((v) => !v)}>
-              {verEtiquetas ? 'ocultar' : `ver (${etiquetas.length})`}
+            <button
+              type="button"
+              className="retro cursor-pointer text-base text-primary hover:text-foreground"
+              onClick={() => setVerEtiquetas((v) => !v)}
+            >
+              {verEtiquetas ? '[ocultar]' : `[ver ${etiquetas.length}]`}
             </button>
           </span>
-          <div className="chips-con-busqueda">
-            {verEtiquetas && (
-              <input
-                type="search"
-                className="input-chico"
-                placeholder="Buscar etiqueta…"
-                value={buscarEtiqueta}
-                onChange={(e) => setBuscarEtiqueta(e.target.value)}
-                aria-label="Buscar etiqueta"
-              />
-            )}
-            <div className="chips">
+          {verEtiquetas && (
+            <input
+              type="search"
+              className="max-w-64 py-1.5"
+              placeholder="Buscar etiqueta…"
+              value={buscarEtiqueta}
+              onChange={(e) => setBuscarEtiqueta(e.target.value)}
+              aria-label="Buscar etiqueta"
+            />
+          )}
+          {etiquetasVisibles.length > 0 && (
+            <div className="flex flex-wrap gap-3">
               {etiquetasVisibles.map((e) => (
-                <button
+                <Chip8bit
                   key={e.etiquetaId}
-                  className={`chip chip-etiqueta ${etqs.includes(e.etiquetaId) ? 'chip-activo' : ''}`}
-                  aria-pressed={etqs.includes(e.etiquetaId)}
+                  activo={etqs.includes(e.etiquetaId)}
                   onClick={() => actualizar({ etiquetas: alternar(etqs, e.etiquetaId) })}
                 >
                   #{e.nombre}
-                </button>
+                </Chip8bit>
               ))}
             </div>
-          </div>
+          )}
         </div>
         {hayFiltros ? (
           <button
-            className="btn-link"
+            type="button"
+            className="retro w-fit cursor-pointer text-base text-destructive hover:underline"
             onClick={() => {
               setBusqueda('');
               setParams(new URLSearchParams(orden !== 'relevancia' ? { orden } : {}));
             }}
           >
-            Limpiar filtros
+            ✕ Limpiar filtros
           </button>
         ) : null}
       </section>
@@ -171,35 +190,69 @@ export default function Catalogo() {
       {error && <Aviso tipo="error">{error}</Aviso>}
       {datos && (
         <>
-          <p className="texto-suave texto-chico">
-            {datos.total} videojuego{datos.total === 1 ? '' : 's'}
+          <p className="retro m-0 text-base text-muted-foreground">
+            {datos.total.toLocaleString('es-AR')} videojuego{datos.total === 1 ? '' : 's'}
           </p>
           {datos.items.length === 0 ? (
-            <div className="vacio">No hay videojuegos que coincidan con la búsqueda.</div>
+            <div className="vacio">
+              <span className="font-titulo text-4xl text-destructive">Game Over</span>
+              <br />
+              No hay videojuegos que coincidan.
+            </div>
           ) : (
-            <div className="grilla-juegos">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-8 px-1.5">
               {datos.items.map((v) => (
-                <Link key={v.appId} to={`/videojuegos/${v.appId}`} className="tarjeta-juego">
-                  <div className="tarjeta-portada">
+                <LinkBatalla
+                  key={v.appId}
+                  to={`/videojuegos/${v.appId}`}
+                  className="tarjeta-juego group flex transition-transform flex-col overflow-hidden text-foreground no-underline hover:-translate-y-1 hover:border-primary hover:text-foreground"
+                >
+                  <div className="relative border-b-4 border-ring">
                     <Portada url={v.imagenUrl} nombre={v.nombre} />
                     {v.enBiblioteca && (
-                      <span className="insignia-biblioteca" title="Está en tu biblioteca de Steam">
-                        En tu biblioteca{v.horasJugadas ? ` · ${horas(v.horasJugadas)}` : ''}
+                      <span className="absolute top-2 left-2 border-2 border-[#04040f] bg-primary px-1.5 py-1 font-pixel text-xs leading-none text-primary-foreground [text-shadow:none]">
+                        En tu biblioteca
                       </span>
                     )}
                   </div>
-                  <div className="tarjeta-cuerpo">
-                    <h3>{v.nombre}</h3>
-                    <p className="texto-chico texto-suave">{v.categorias.map((c) => c.nombre).join(' · ')}</p>
-                    <span className="texto-chico">
-                      {v.cantidadResenas} reseña{v.cantidadResenas === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                </Link>
+                  <h3 className="m-0 flex flex-1 items-center gap-2 px-3 pt-3 pb-2 font-sans text-base leading-snug">
+                    <Mano className="invisible group-hover:visible" />
+                    {v.nombre}
+                  </h3>
+                  {v.enBiblioteca && (
+                    <p className="m-0 px-3 pb-3 pl-10 font-pixel text-sm text-primary">
+                      {horas(v.horasJugadas ?? 0)} jugadas
+                    </p>
+                  )}
+                </LinkBatalla>
               ))}
             </div>
           )}
-          <Paginacion pagina={datos.pagina} paginas={datos.paginas} onCambiar={(p) => actualizar({ pagina: String(p) })} />
+          {datos.paginas > 1 && (
+            <nav className="flex items-center justify-center gap-6" aria-label="Paginación">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-sm"
+                disabled={datos.pagina <= 1}
+                onClick={() => actualizar({ pagina: String(datos.pagina - 1) })}
+              >
+                ◀ Ant
+              </Button>
+              <span className="retro text-base">
+                {datos.pagina}/{datos.paginas}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-sm"
+                disabled={datos.pagina >= datos.paginas}
+                onClick={() => actualizar({ pagina: String(datos.pagina + 1) })}
+              >
+                Sig ▶
+              </Button>
+            </nav>
+          )}
         </>
       )}
     </div>

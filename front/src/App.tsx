@@ -1,37 +1,64 @@
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { useSesion } from './sesion';
 import { Avatar } from './components/Avatar';
+import { FondoAnimado, Icono, Mano, type NombreIcono } from './components/PixelArte';
 import Login from './pages/Login';
 import Catalogo from './pages/Catalogo';
 import VideojuegoPagina from './pages/Videojuego';
 import PerfilPagina from './pages/Perfil';
 import BibliotecaPagina from './pages/Biblioteca';
 import Admin from './pages/Admin';
+import Configuracion from './pages/Configuracion';
+
+// Menú de comandos de RPG: el ítem activo lleva la manito de Final Fantasy.
+const claseNav = ({ isActive }: { isActive: boolean }) =>
+  `group retro flex items-center gap-1.5 px-2 py-1.5 text-base no-underline ${
+    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+  }`;
+
+function ItemMenu({ to, end, icono, children }: { to: string; end?: boolean; icono: NombreIcono; children: React.ReactNode }) {
+  return (
+    <NavLink to={to} end={end} className={claseNav}>
+      {({ isActive }) => (
+        <>
+          <Mano className={isActive ? '' : 'invisible group-hover:visible max-sm:hidden'} />
+          <Icono nombre={icono} />
+          {children}
+        </>
+      )}
+    </NavLink>
+  );
+}
 
 function Encabezado() {
-  const { estado, salir } = useSesion();
+  const { estado } = useSesion();
   const u = estado?.usuario;
   if (!u) return null;
   return (
-    <header className="encabezado">
-      <div className="encabezado-interno">
-        <NavLink to="/" className="marca">
-          <span className="marca-icono">★</span> Reseñas<span className="marca-sub">Steam</span>
+    <header className="ventana sticky top-0 z-20 !rounded-none !border-x-0 !border-t-0">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+        <NavLink to="/" className="flex items-baseline gap-2 font-titulo text-3xl leading-none text-primary no-underline hover:text-primary">
+          Reseñas<span className="font-pixel text-sm text-accent">de Steam</span>
         </NavLink>
-        <nav className="nav">
-          <NavLink to="/" end>
+        <nav className="flex flex-wrap gap-1">
+          <ItemMenu to="/" end icono="espada">
             Catálogo
-          </NavLink>
-          <NavLink to="/biblioteca">Mi biblioteca</NavLink>
-          <NavLink to={`/usuarios/${u.steamId}`}>Mi perfil</NavLink>
-          {u.esAdmin && <NavLink to="/admin">Administración</NavLink>}
+          </ItemMenu>
+          <ItemMenu to="/biblioteca" icono="cofre">
+            Biblioteca
+          </ItemMenu>
+          <ItemMenu to={`/usuarios/${u.steamId}`} icono="armadura">
+            Perfil
+          </ItemMenu>
+          {u.esAdmin && (
+            <ItemMenu to="/admin" icono="corona">
+              Admin
+            </ItemMenu>
+          )}
         </nav>
-        <div className="usuario-actual">
-          <Avatar url={u.avatarUrl} nombre={u.nombreUsuario} tam={32} />
-          <span className="usuario-nombre">{u.nombreUsuario}</span>
-          <button className="btn btn-fantasma btn-chico" onClick={() => void salir()}>
-            Salir
-          </button>
+        <div className="ml-auto flex items-center gap-4">
+          <Avatar url={u.avatarUrl} nombre={u.nombreUsuario} tam={36} />
+          <span className="hidden max-w-[16ch] truncate sm:inline">{u.nombreUsuario}</span>
         </div>
       </div>
     </header>
@@ -54,6 +81,7 @@ export default function App() {
   return (
     <>
       <Encabezado />
+      <FondoAnimado />
       <main className="contenido">
         <Routes>
           <Route path="/login" element={estado?.autenticado ? <Navigate to="/" replace /> : <Login />} />
@@ -62,6 +90,7 @@ export default function App() {
           <Route path="/usuarios/:steamId" element={<Protegida><PerfilPagina /></Protegida>} />
           <Route path="/biblioteca" element={<Protegida><BibliotecaPagina /></Protegida>} />
           <Route path="/admin" element={<Protegida admin><Admin /></Protegida>} />
+          <Route path="/configuracion" element={<Protegida><Configuracion /></Protegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -4,7 +4,7 @@ Aplicación web para consultar y publicar reseñas de videojuegos de Steam. El a
 
 | Capa | Tecnología |
 | --- | --- |
-| Front (`front/`) | React 19 + Vite + TypeScript + React Router |
+| Front (`front/`) | React 19 + Vite + TypeScript + React Router + Tailwind CSS 4 + 8bitcn-ui |
 | Back (`back/`) | Node.js + Express 5 + TypeScript + Prisma + Zod |
 | Base de datos | PostgreSQL 17 (Docker) |
 
@@ -35,11 +35,20 @@ npm run dev                   # http://localhost:5173
 
 Abrí http://localhost:5173. La documentación de la API (Swagger) está en **http://localhost:5173/api/docs** (también en http://localhost:3000/api/docs; el JSON OpenAPI está en `/api/docs.json`). El front reenvía `/api` al back, así que el navegador trabaja con un solo origen (la cookie de sesión y el retorno de Steam funcionan sin CORS).
 
+### Estética
+
+La interfaz imita a los RPG de 16 bits (Final Fantasy IV/VI, Chrono Trigger, Dragon Quest, EarthBound): ventanas de menú azules con bisel, cursor de mano, tipografías pixeladas (Jacquard 24, Tiny5 y DotGothic16), fondo animado y animaciones cortas (apertura de ventanas, transición de batalla al entrar a un juego, diálogos letra por letra, destellos y números flotantes). Todas las animaciones se desactivan si el sistema tiene activado "reducir movimiento".
+
+En **Perfil → Configuración** cada usuario elige el fondo, el marco del retrato y si se muestran el avatar animado, el marco de avatar y el fondo de perfil de Steam (se guarda en el navegador).
+
+El pixel art viene de bancos de recursos libres (OpenGameArt, Kenney, Pixel Icon Library). Los créditos y licencias están en [`front/public/sprites/CREDITOS.md`](front/public/sprites/CREDITOS.md).
+
 ### Steam real o modo simulado
 
 - **Iniciar sesión con Steam** siempre usa Steam real (OpenID 2.0, sin contraseñas). El nombre de perfil y el avatar se toman de la Web API si hay clave, o si no del XML público del perfil.
 - **Sin `STEAM_API_KEY`** (o con `STEAM_MOCK=true`), la **biblioteca y las horas se simulan**, porque Steam no las expone sin clave. Además, el login muestra usuarios de prueba. Un SteamID terminado en `000` simula una biblioteca privada.
 - **Con clave** (`STEAM_API_KEY` y `STEAM_MOCK=false`), la biblioteca y las horas se leen de Steam y se cruzan con el catálogo por AppID. Para que coincidan tus juegos tiene que estar cargado el dataset completo.
+- **Perfil de Steam**: la página de perfil muestra nivel y barra de EXP, antigüedad de la cuenta, juegos y horas totales (con clave), y el avatar animado, el marco de avatar y el fondo de perfil equipados (los toma de un endpoint de Steam no documentado que no requiere clave). En modo simulado, el nivel, la EXP y las horas son valores de prueba.
 - **Administradores**: poné sus SteamID en `ADMIN_STEAM_IDS`, separados por coma. En modo simulado, `76561198000000001` ("Admin de prueba") sirve como admin.
 
 En **[docs/integracion-steam-web-api.md](docs/integracion-steam-web-api.md)** está cómo obtener y configurar la clave, sus requisitos y límites, la privacidad del perfil y las llamadas que se hacen.

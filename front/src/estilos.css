@@ -1,23 +1,37 @@
+/* Estilos de la app: RPG de fantasía de 16 bits (Final Fantasy IV/VI, Chrono Trigger, Dragon Quest, EarthBound).
+   Usa clases semánticas (panel, resena, tarjeta-juego…) que comparten todas las pantallas.
+   Se carga en la capa "base" de Tailwind (ver index.css), así las utilidades de Tailwind pueden pisarlo. */
+
 :root {
-  --fondo: #0f1620;
-  --fondo-2: #16202d;
-  --superficie: #1b2838;
-  --superficie-2: #22324a;
-  --borde: #2c3e57;
-  --texto: #e6edf5;
-  --texto-suave: #9aabbf;
-  --acento: #66c0f4;
-  --acento-fuerte: #1a9fff;
-  --acento-texto: #06121e;
-  --exito: #5ba32b;
-  --peligro: #e5534b;
-  --alerta: #d8a43a;
-  --estrella: #f5c242;
-  --radio: 10px;
-  --sombra: 0 6px 24px rgb(0 0 0 / 0.35);
+  --fondo: #07071c;
+  --marco: #f4f4fc;
+  --bisel: #8f97c4;
+  --marco-sombra: #0c0c18;
+  --texto: #f8f8f8;
+  --texto-suave: #b4bcff;
+  --oro: #ffd447;
+  --oro-texto: #2a1c00;
+  --mp: #7fd8ff;
+  --hp: #48e078;
+  --peligro: #ff6b6b;
+  --alerta: #ffa53b;
+  --estrella-vacia: #3a3f7a;
+  /* Fuentes: interfaz de menú (Tiny5), títulos góticos (Jacquard 24) y texto (DotGothic16) */
+  --pixel: 'Tiny5', monospace;
+  --titulo: 'Jacquard 24', serif;
+  --texto-rpg: 'DotGothic16', monospace;
+  --mano: url('/sprites/mano.png');
+  /* Ventana de SNES: tramado sutil sobre un degradé azul, marco blanco con bisel gris */
+  --ventana-fondo:
+    repeating-conic-gradient(rgb(255 255 255 / 0.035) 0 25%, transparent 0 50%) 0 0 / 4px 4px,
+    linear-gradient(180deg, #4a5ee0 0%, #2a3cb0 35%, #101a70 100%);
+  --ventana-marco:
+    0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel), inset 0 0 0 4px #1a1a38,
+    5px 6px 0 2px rgb(0 0 0 / 0.45);
+  --sombra-texto: 0.1em 0.1em 0 rgb(0 0 0 / 0.65);
   color-scheme: dark;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  font-family: var(--texto-rpg);
+  line-height: 1.6;
 }
 
 * {
@@ -25,39 +39,71 @@
 }
 body {
   margin: 0;
-  background: radial-gradient(1200px 500px at 50% -200px, #1d3550 0%, transparent 70%), var(--fondo);
-  background-attachment: fixed;
   color: var(--texto);
   min-height: 100vh;
+  font-size: 15px;
+  text-shadow: var(--sombra-texto);
+  -webkit-font-smoothing: none;
 }
 a {
-  color: var(--acento);
+  color: var(--mp);
   text-decoration: none;
 }
 a:hover {
-  text-decoration: underline;
+  color: var(--oro);
 }
-h1,
-h2,
-h3 {
+/* Títulos de página: placa de menú, como los encabezados "Ítem" o "Magia" de Final Fantasy */
+h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.75rem;
+  padding: 0.4rem 1.1rem 0.5rem;
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
   line-height: 1.2;
+  color: var(--texto);
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
+  border-radius: 8px;
+  box-shadow: var(--ventana-marco);
+}
+/* Subtítulos: texto de menú con una gema dorada */
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 2rem 0 0.75rem;
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--texto);
+}
+h2::before {
+  content: '';
+  width: 0.55em;
+  height: 0.55em;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fff3a0, var(--oro) 50%, #b07a10);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 2px var(--marco-sombra);
+}
+h3 {
+  font-family: var(--pixel);
+  font-size: 1rem;
+  font-weight: normal;
   margin: 0 0 0.5rem;
 }
-h1 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-}
-h2 {
-  font-size: 1.25rem;
-  margin-top: 1.75rem;
-}
 code {
-  background: var(--fondo-2);
+  background: var(--marco-sombra);
   padding: 0.1em 0.35em;
-  border-radius: 4px;
   font-size: 0.9em;
+  text-shadow: none;
 }
 .mono {
-  font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace;
+  font-family: var(--texto-rpg);
 }
 .sr-only {
   position: absolute;
@@ -70,7 +116,48 @@ code {
   color: var(--texto-suave);
 }
 .texto-chico {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Cursor de mano (Final Fantasy) ---------- */
+@keyframes mano {
+  50% {
+    transform: translateX(-3px);
+  }
+}
+.mano,
+.cursor-mano::before,
+.btn:hover:not(:disabled)::before,
+.perfil-prueba:hover strong::before,
+.item-biblioteca:hover .item-nombre::before,
+.pestanias button.activa::before {
+  content: '';
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: 0.2em;
+  vertical-align: -0.35em;
+  background: var(--mano) no-repeat center / contain;
+  image-rendering: pixelated;
+  animation: mano 0.6s steps(1) infinite;
+  flex-shrink: 0;
+}
+
+/* ---------- Ventana genérica de RPG ---------- */
+.ventana,
+.panel,
+.resena,
+.perfil-cabecera,
+.item-biblioteca,
+.filtros,
+.login-tarjeta,
+.tabla-envoltorio,
+.lista-clasificacion,
+.tarjeta-juego {
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
+  border-radius: 8px;
+  box-shadow: var(--ventana-marco);
 }
 
 input,
@@ -78,17 +165,23 @@ select,
 textarea {
   font: inherit;
   color: var(--texto);
-  background: var(--fondo-2);
-  border: 1px solid var(--borde);
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
+  background: #0a0a26;
+  border: 3px solid var(--marco);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px var(--bisel);
+  padding: 0.55rem 0.75rem;
   width: 100%;
+  text-shadow: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #7078c8;
 }
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid var(--acento-fuerte);
-  outline-offset: -1px;
+  outline: 3px solid var(--oro);
+  outline-offset: 0;
 }
 textarea {
   resize: vertical;
@@ -97,99 +190,90 @@ input:disabled {
   opacity: 0.6;
 }
 :focus-visible {
-  outline: 2px solid var(--acento);
+  outline: 3px solid var(--oro);
   outline-offset: 2px;
 }
 
-/* ---------- Botones ---------- */
+/* ---------- Botones: comandos de menú ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 0.6rem 1.1rem;
-  font: inherit;
-  font-weight: 600;
+  font-family: var(--pixel);
+  font-size: 1rem;
+  line-height: 1.2;
+  padding: 0.6rem 1rem;
+  border: 3px solid var(--marco);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel), 3px 4px 0 2px rgb(0 0 0 / 0.45);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.05s;
   white-space: nowrap;
+  color: var(--texto);
+  background: var(--ventana-fondo);
+}
+.btn:hover:not(:disabled) {
+  color: var(--oro);
 }
 .btn:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(2px, 3px);
+  box-shadow: 0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel);
 }
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: not-allowed;
 }
-.btn:hover {
-  text-decoration: none;
+.btn-primario,
+.btn-steam {
+  background: linear-gradient(180deg, #ffe680 0%, #ffd447 50%, #e0a820 100%);
+  color: var(--oro-texto);
+  text-shadow: none;
 }
-.btn-primario {
-  background: var(--acento-fuerte);
-  color: #fff;
-}
-.btn-primario:hover:not(:disabled) {
-  background: #0d8ae6;
+.btn-primario:hover:not(:disabled),
+.btn-steam:hover:not(:disabled) {
+  color: var(--oro-texto);
+  filter: brightness(1.08);
 }
 .btn-secundario {
-  background: var(--superficie-2);
-  color: var(--texto);
-  border-color: var(--borde);
-}
-.btn-secundario:hover:not(:disabled) {
-  border-color: var(--acento);
+  background: var(--ventana-fondo);
 }
 .btn-fantasma {
-  background: transparent;
+  background: #0a0a26;
   color: var(--texto-suave);
-  border-color: var(--borde);
-}
-.btn-fantasma:hover:not(:disabled) {
-  color: var(--texto);
 }
 .btn-peligro {
-  background: transparent;
-  color: var(--peligro);
-  border-color: color-mix(in srgb, var(--peligro) 50%, transparent);
-}
-.btn-peligro:hover {
-  background: color-mix(in srgb, var(--peligro) 15%, transparent);
+  background: linear-gradient(180deg, #a02030 0%, #600a18 100%);
+  color: #ffe0e0;
 }
 .btn-chico {
-  padding: 0.35rem 0.7rem;
-  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.9rem;
 }
 .btn-link {
   background: none;
   border: none;
-  color: var(--acento);
+  color: var(--mp);
   font: inherit;
-  font-size: 0.875rem;
+  font-family: var(--pixel);
+  font-size: 0.95rem;
   cursor: pointer;
   padding: 0 0.35rem;
+  text-shadow: var(--sombra-texto);
 }
 .btn-link:hover {
-  text-decoration: underline;
+  color: var(--oro);
 }
 .btn-link-peligro {
   color: var(--peligro);
 }
 .btn-steam {
-  background: linear-gradient(90deg, #06bfff, #2d73ff);
-  color: #fff;
-  font-size: 1.05rem;
-  padding: 0.85rem 1.4rem;
   width: 100%;
-  margin-top: 1.25rem;
-}
-.btn-steam:hover {
-  filter: brightness(1.08);
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.2rem;
+  font-size: 1.15rem;
 }
 .btn-archivo {
   position: relative;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 .btn-archivo input {
   position: absolute;
@@ -199,125 +283,123 @@ input:disabled {
 }
 .fila-botones {
   display: flex;
-  gap: 0.6rem;
+  gap: 1rem;
   justify-content: flex-end;
   flex-wrap: wrap;
-  margin-top: 0.75rem;
+  margin-top: 1rem;
 }
 .fila-izq {
   justify-content: flex-start;
 }
 
-/* ---------- Encabezado ---------- */
-.encabezado {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgb(15 22 32 / 0.85);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--borde);
-}
-.encabezado-interno {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0.6rem 16px;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-.marca {
-  font-weight: 800;
-  font-size: 1.15rem;
-  color: var(--texto);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.marca:hover {
-  text-decoration: none;
-}
-.marca-icono {
-  color: var(--estrella);
-}
-.marca-sub {
-  color: var(--acento);
-  font-weight: 600;
-  margin-left: 0.2rem;
-}
-.nav {
-  display: flex;
-  gap: 0.25rem;
-  flex: 1;
-  overflow-x: auto;
-}
-.nav a {
-  color: var(--texto-suave);
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  white-space: nowrap;
-  font-weight: 500;
-}
-.nav a:hover {
-  color: var(--texto);
-  text-decoration: none;
-  background: var(--superficie);
-}
-.nav a.active {
-  color: var(--texto);
-  background: var(--superficie-2);
-}
-.usuario-actual {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-.usuario-nombre {
-  font-weight: 600;
-  max-width: 14ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .contenido {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem 16px 4rem;
+  padding: 1.75rem 16px 4rem;
 }
 .cargando,
 .vacio {
   padding: 2.5rem 1rem;
   text-align: center;
   color: var(--texto-suave);
-  border: 1px dashed var(--borde);
-  border-radius: var(--radio);
+  border: 3px dashed var(--bisel);
+  border-radius: 8px;
+  background: #0a0a26;
 }
 .cargando {
   border: none;
+  background: none;
+  font-family: var(--pixel);
+  font-size: 1.1rem;
+}
+/* Fondo animado: cielo y nubes que se desplazan muy despacio, con un velo oscuro para que
+   el texto se lea siempre. Las nubes son pixel art de 270x170 dibujado al triple. */
+@keyframes cielo {
+  to {
+    background-position: -1500px 0;
+  }
+}
+@keyframes nubes {
+  to {
+    background-position: -810px 0;
+  }
+}
+.fondo-animado {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: url('/sprites/fondos/noche.jpg') 0 0 / auto 100% repeat-x #070718;
+  animation: cielo 400s linear infinite;
+}
+.fondo-animado::before,
+.fondo-animado::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  image-rendering: pixelated;
+}
+/* Capa de nubes */
+.fondo-animado::before {
+  background: url('/sprites/fondos/nubes-blancas.png') 0 18% / 810px 510px repeat-x;
+  opacity: 0.18;
+  animation: nubes 150s linear infinite;
+}
+/* Velo oscuro para la lectura */
+.fondo-animado::after {
+  background: linear-gradient(180deg, rgb(7 7 24 / 0.55), rgb(7 7 24 / 0.35) 50%, rgb(7 7 24 / 0.65));
+}
+.fondo-animado[data-fondo='nubes'] {
+  background: linear-gradient(180deg, #0b0b2e 0%, #1d1650 55%, #3a2060 100%);
+  animation: none;
+}
+.fondo-animado[data-fondo='nubes']::before {
+  background:
+    url('/sprites/fondos/nubes-blancas.png') 0 10% / 810px 510px repeat-x,
+    url('/sprites/fondos/nubes-rosas.png') 300px 75% / 810px 510px repeat-x;
+  opacity: 0.35;
+  animation: nubes 120s linear infinite;
+}
+.fondo-animado[data-fondo='nubes']::after {
+  background: rgb(7 7 24 / 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fondo-animado,
+  .fondo-animado::before {
+    animation: none;
+  }
+  .mano,
+  .cursor-mano::before,
+  .btn:hover:not(:disabled)::before {
+    animation: none;
+  }
 }
 
-/* ---------- Avatar / portada / estrellas ---------- */
+/* ---------- Avatar (retrato) / portada / estrellas ---------- */
 .avatar {
-  border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
   display: inline-block;
+  border: 3px solid var(--marco);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel);
+  image-rendering: pixelated;
+  background: #101a70;
 }
 .avatar-inicial {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--acento-fuerte), #7b5cff);
-  color: #fff;
-  font-weight: 700;
+  font-family: var(--titulo);
+  color: var(--oro);
 }
 .portada {
   display: block;
   width: 100%;
   aspect-ratio: 460 / 215;
   object-fit: cover;
-  background: var(--superficie-2);
+  background: var(--marco-sombra);
 }
 .portada-vacia {
   display: flex;
@@ -325,315 +407,239 @@ input:disabled {
   justify-content: center;
   padding: 0.5rem;
   text-align: center;
-  font-weight: 700;
   color: var(--texto-suave);
-  background: linear-gradient(135deg, var(--superficie-2), var(--fondo-2));
+  background: repeating-linear-gradient(45deg, #101a70 0 8px, #0b1560 8px 16px);
 }
 .portada-mini {
   width: 92px;
-  border-radius: 6px;
   flex-shrink: 0;
   font-size: 0.65rem;
+  border: 2px solid var(--marco);
+  border-radius: 3px;
 }
 .portada-grande {
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
+  border: 3px solid var(--marco);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--marco-sombra), 8px 8px 0 2px rgb(0 0 0 / 0.5);
 }
 .estrellas {
-  letter-spacing: 1px;
-  white-space: nowrap;
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+  filter: drop-shadow(1px 1px 0 #000);
 }
-.estrellas .llena {
-  color: var(--estrella);
+.estrella {
+  position: relative;
+  display: inline-block;
 }
-.estrellas .vacia {
-  color: #3a4b62;
+.estrella svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.estrella-relleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
 }
 .selector-estrellas {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.75rem;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 .selector-estrellas button {
   background: none;
   border: none;
-  font-size: 2rem;
-  line-height: 1;
   cursor: pointer;
-  padding: 0 0.1rem;
-  transition: transform 0.1s;
+  padding: 2px;
+  line-height: 0;
 }
 .selector-estrellas button:hover {
-  transform: scale(1.15);
-}
-.selector-estrellas .llena {
-  color: var(--estrella);
-}
-.selector-estrellas .vacia {
-  color: #3a4b62;
+  transform: translateY(-2px);
 }
 .selector-texto {
   margin-left: 0.6rem;
   color: var(--texto-suave);
-  font-size: 0.9rem;
+  font-family: var(--pixel);
 }
 
-/* ---------- Avisos ---------- */
+/* ---------- Avisos: cuadro de diálogo ---------- */
 .aviso {
+  margin: 1rem 0;
+  padding: 0.9rem 1.1rem 0.9rem 2.8rem;
+  position: relative;
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin: 0.75rem 0;
-  border: 1px solid;
-  font-size: 0.95rem;
+  box-shadow: var(--ventana-marco);
 }
-.aviso-info {
-  border-color: var(--acento);
-  background: color-mix(in srgb, var(--acento) 10%, transparent);
+.aviso::before {
+  position: absolute;
+  left: 1rem;
+  top: 0.8rem;
+  font-family: var(--pixel);
+  font-size: 1.2rem;
 }
-.aviso-error {
-  border-color: var(--peligro);
-  background: color-mix(in srgb, var(--peligro) 12%, transparent);
+.aviso-info::before {
+  content: 'i';
+  color: var(--mp);
 }
-.aviso-exito {
-  border-color: var(--exito);
-  background: color-mix(in srgb, var(--exito) 14%, transparent);
+.aviso-error::before {
+  content: '✕';
+  color: var(--peligro);
 }
-.aviso-alerta {
-  border-color: var(--alerta);
-  background: color-mix(in srgb, var(--alerta) 12%, transparent);
+.aviso-exito::before {
+  content: '★';
+  color: var(--hp);
+}
+.aviso-alerta::before {
+  content: '!';
+  color: var(--alerta);
 }
 .error-chico {
   color: var(--peligro);
-  font-size: 0.875rem;
   margin: 0.5rem 0 0;
 }
 .insignia {
   display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.5rem;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--acento) 18%, transparent);
-  color: var(--acento);
+  font-family: var(--pixel);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  background: linear-gradient(180deg, #ffe680, #e0a820);
+  color: var(--oro-texto);
+  border: 2px solid var(--marco-sombra);
+  border-radius: 3px;
   margin-left: 0.5rem;
   vertical-align: middle;
+  text-shadow: none;
 }
 .insignia-gris {
-  background: var(--superficie-2);
-  color: var(--texto-suave);
+  background: var(--estrella-vacia);
+  color: var(--texto);
 }
 
-/* ---------- Login ---------- */
+/* ---------- Login: pantalla de título ---------- */
 .login {
   min-height: calc(100vh - 6rem);
   display: grid;
   place-items: center;
 }
 .login-tarjeta {
-  width: min(480px, 100%);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: var(--sombra);
+  width: min(560px, 100%);
+  padding: 2.25rem 2rem;
   text-align: center;
 }
 .login-logo {
-  font-size: 2.5rem;
-  color: var(--estrella);
-  line-height: 1;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.login-tarjeta h1 {
+  font-family: var(--titulo);
+  color: var(--oro);
+  font-size: clamp(2.6rem, 8vw, 3.6rem);
+  text-shadow: 3px 3px 0 #000;
+  margin-bottom: 0.25rem;
+}
+.login-subtitulo {
+  font-family: var(--pixel);
+  color: var(--texto-suave);
+  letter-spacing: 0.15em;
+  margin: 0 0 1.25rem;
 }
 .login-dev {
-  margin-top: 1.75rem;
+  margin-top: 2rem;
   padding-top: 1.25rem;
-  border-top: 1px dashed var(--borde);
+  border-top: 3px dashed var(--bisel);
   text-align: left;
 }
 .login-dev h2 {
   margin-top: 0;
-  font-size: 1rem;
 }
 .perfiles-prueba {
   display: grid;
-  gap: 0.5rem;
-  margin: 0.75rem 0;
+  gap: 0.75rem;
+  margin: 1rem 0;
 }
+/* Usuarios de prueba como ranuras de partida guardada */
 .perfil-prueba {
   text-align: left;
-  background: var(--fondo-2);
-  border: 1px solid var(--borde);
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel);
+  padding: 0.6rem 0.9rem;
   color: var(--texto);
   font: inherit;
+  text-shadow: var(--sombra-texto);
   cursor: pointer;
   display: flex;
   flex-direction: column;
 }
-.perfil-prueba:hover {
-  border-color: var(--acento);
+.perfil-prueba strong {
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: 1.05rem;
+}
+.perfil-prueba:hover strong {
+  color: var(--oro);
 }
 .perfil-prueba span {
   color: var(--texto-suave);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 .form-dev {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+.copyright {
+  margin: 1.5rem 0 0;
+  font-family: var(--pixel);
+  font-size: 0.85rem;
+  color: var(--texto-suave);
 }
 
-/* ---------- Catálogo ---------- */
-.catalogo-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-.barra-busqueda {
-  display: flex;
-  gap: 0.5rem;
-  flex: 1;
-  max-width: 560px;
-  min-width: min(100%, 280px);
-}
-.barra-busqueda select {
-  width: auto;
-}
-.filtros {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 0.9rem 1rem;
-  margin-bottom: 1rem;
-  display: grid;
-  gap: 0.6rem;
-}
-.grupo-filtro {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 0.75rem;
-  align-items: start;
-}
-.filtro-titulo {
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding-top: 0.3rem;
-}
-.filtro-titulo .btn-link {
-  display: block;
-  padding: 0;
-  font-size: 0.8rem;
-}
+/* ---------- Chips ---------- */
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
 .chip {
-  border: 1px solid var(--borde);
-  background: var(--fondo-2);
+  border: 2px solid var(--marco);
+  border-radius: 4px;
+  background: #0a0a26;
   color: var(--texto);
-  border-radius: 99px;
-  padding: 0.25rem 0.75rem;
-  font: inherit;
-  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--pixel);
+  font-size: 0.9rem;
   cursor: pointer;
-}
-a.chip:hover {
-  text-decoration: none;
-  border-color: var(--acento);
+  box-shadow: 0 0 0 2px var(--marco-sombra);
 }
 .chip:hover {
-  border-color: var(--acento);
+  color: var(--oro);
+  border-color: var(--oro);
 }
 .chip-etiqueta {
   color: var(--texto-suave);
 }
 .chip-activo {
-  background: var(--acento);
-  border-color: var(--acento);
-  color: var(--acento-texto);
-  font-weight: 600;
+  background: linear-gradient(180deg, #ffe680, #e0a820);
+  border-color: var(--oro);
+  color: var(--oro-texto);
+  text-shadow: none;
 }
-.grilla-juegos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-.tarjeta-juego {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  overflow: hidden;
-  color: var(--texto);
-  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
-  display: flex;
-  flex-direction: column;
-}
-.tarjeta-juego:hover {
-  text-decoration: none;
-  transform: translateY(-3px);
-  border-color: var(--acento);
-  box-shadow: var(--sombra);
-}
-.tarjeta-cuerpo {
-  padding: 0.75rem 0.9rem 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-.tarjeta-cuerpo h3 {
-  font-size: 1rem;
-  margin: 0;
-}
-.tarjeta-cuerpo p {
-  margin: 0;
-  flex: 1;
-}
+
 .paginacion {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  color: var(--texto-suave);
-  font-size: 0.9rem;
-}
-
-.chips-con-busqueda {
-  display: grid;
-  gap: 0.5rem;
-}
-.input-chico {
-  max-width: 260px;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.875rem;
-}
-
-.tarjeta-portada {
-  position: relative;
-}
-.insignia-biblioteca {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  background: rgb(6 18 30 / 0.85);
-  color: var(--acento);
-  border: 1px solid color-mix(in srgb, var(--acento) 60%, transparent);
-  border-radius: 99px;
-  padding: 0.1rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+  font-family: var(--pixel);
+  font-size: 1rem;
 }
 .sin-margen {
   margin: 0;
@@ -642,31 +648,49 @@ a.chip:hover {
 /* ---------- Videojuego ---------- */
 .volver {
   display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--texto-suave);
+  margin-bottom: 1.25rem;
+  font-family: var(--pixel);
+  font-size: 1rem;
 }
 .juego-cabecera {
   display: grid;
   grid-template-columns: minmax(0, 420px) 1fr;
-  gap: 1.75rem;
+  gap: 2rem;
   align-items: start;
+}
+.juego-info h1,
+.perfil-cabecera h1,
+.login-tarjeta h1 {
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  text-shadow: var(--sombra-texto);
+}
+.juego-info h1 {
+  font-family: var(--texto-rpg);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.3;
 }
 .juego-puntaje {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin: 0.5rem 0 1rem;
   flex-wrap: wrap;
 }
+.juego-puntaje strong {
+  font-family: var(--pixel);
+  font-size: 1.3rem;
+  color: var(--oro);
+}
 .juego-descripcion {
-  color: #c7d5e0;
+  color: #e4e7ff;
 }
 .panel {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 1.25rem;
-  margin-top: 1.5rem;
+  padding: 1.4rem;
+  margin-top: 1.75rem;
 }
 .panel h2 {
   margin-top: 0;
@@ -677,38 +701,34 @@ a.chip:hover {
   position: relative;
   border: none;
   padding: 0;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
 }
 .campo > span,
 .campo legend {
-  font-size: 0.85rem;
+  font-family: var(--pixel);
   color: var(--texto-suave);
-  font-weight: 500;
   margin-bottom: 0.35rem;
 }
 .contador {
   justify-self: end;
-  font-size: 0.8rem !important;
+  font-size: 0.85rem !important;
   color: var(--texto-suave);
 }
 .contador-alerta {
   color: var(--alerta) !important;
 }
 
-/* ---------- Reseñas ---------- */
+/* ---------- Reseñas: cuadros de diálogo con retrato ---------- */
 .lista-resenas {
   display: grid;
-  gap: 0.9rem;
-  margin-top: 0.75rem;
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 .resena {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 1rem 1.15rem;
+  padding: 1rem 1.2rem;
 }
 .resena-propia {
-  border-color: color-mix(in srgb, var(--acento) 55%, var(--borde));
+  border-color: var(--oro);
 }
 .resena-cabecera {
   display: flex;
@@ -720,31 +740,37 @@ a.chip:hover {
 .resena-autor {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.8rem;
   color: var(--texto);
   min-width: 0;
 }
-.resena-autor:hover {
-  text-decoration: none;
+.resena-autor strong {
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: 1.1rem;
 }
 .resena-autor:hover strong {
-  color: var(--acento);
+  color: var(--oro);
 }
 .resena-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.1rem;
+  gap: 0.25rem;
 }
 .horas {
-  font-size: 0.8rem;
+  font-family: var(--pixel);
+  font-size: 0.9rem;
   color: var(--texto-suave);
 }
 .resena-texto {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  margin: 0.8rem 0;
-  color: #d4dee8;
+  margin: 0.9rem 0;
+  padding: 0.75rem 0.9rem;
+  background: rgb(8 8 30 / 0.5);
+  border-radius: 4px;
+  color: #f2f3ff;
 }
 .resena-pie {
   display: flex;
@@ -756,64 +782,364 @@ a.chip:hover {
 .resena-acciones {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
 .resena-fecha {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--texto-suave);
 }
 .btn-valorar {
   display: inline-flex;
-  gap: 0.35rem;
+  gap: 0.4rem;
   align-items: center;
-  background: var(--fondo-2);
-  border: 1px solid var(--borde);
-  border-radius: 6px;
+  background: #0a0a26;
+  border: 2px solid var(--marco);
+  border-radius: 4px;
   padding: 0.3rem 0.65rem;
   color: var(--texto);
-  font: inherit;
-  font-size: 0.875rem;
+  font-family: var(--pixel);
+  font-size: 1rem;
   cursor: pointer;
+  box-shadow: 0 0 0 2px var(--marco-sombra);
 }
 .btn-valorar:hover:not(:disabled) {
-  border-color: var(--acento);
+  border-color: var(--oro);
 }
 .btn-valorar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .btn-valorar.activo {
-  background: color-mix(in srgb, var(--acento-fuerte) 25%, var(--fondo-2));
-  border-color: var(--acento-fuerte);
+  background: #0f3d1c;
+  border-color: var(--hp);
 }
 .btn-valorar.activo-neg {
-  background: color-mix(in srgb, var(--peligro) 22%, var(--fondo-2));
+  background: #4a0f18;
   border-color: var(--peligro);
 }
 
-/* ---------- Perfil ---------- */
+/* ---------- Perfil: pantalla de estado del personaje ---------- */
 .perfil-cabecera {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.75rem;
   align-items: center;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 1.25rem;
+  padding: 1.5rem;
 }
 .perfil-cabecera h1 {
-  margin-bottom: 0.2rem;
+  font-family: var(--texto-rpg);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--oro);
+  margin-bottom: 0.4rem;
+}
+/* Retrato del personaje dentro de un marco CC0 (ver public/sprites/CREDITOS.md) */
+.retrato {
+  --marco: url('/sprites/marcos/ornamentado-azul.png');
+  position: relative;
+  flex-shrink: 0;
+  width: 192px;
+  height: 192px;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 6px 0 rgb(0 0 0 / 0.45));
+}
+.retrato-imagen {
+  position: absolute;
+  inset: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #101a70;
+  font-family: var(--titulo);
+  font-size: 4.5rem;
+  color: var(--oro);
+}
+.retrato-imagen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+}
+/* Marcos de 9 partes (96x96, esquinas de 24px) dibujados al doble de tamaño */
+.retrato::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 48px solid transparent;
+  border-image: var(--marco) 24 / 48px stretch;
+  pointer-events: none;
+}
+.retrato[data-marco='piedra'],
+.retrato[data-marco='pergamino'] {
+  --marco: url('/sprites/marcos/piedra.png');
+}
+.retrato[data-marco='pergamino'] {
+  --marco: url('/sprites/marcos/pergamino.png');
+}
+/* Kenney Pixel UI: 48x48 con esquinas de 16px, al triple de tamaño */
+.retrato[data-marco='piedra']::after,
+.retrato[data-marco='pergamino']::after {
+  border-width: 48px;
+  border-image: var(--marco) 16 / 48px stretch;
+}
+.retrato[data-marco='piedra'] .retrato-imagen,
+.retrato[data-marco='pergamino'] .retrato-imagen {
+  inset: 18px;
+}
+.retrato[data-marco='doble-blanco'] {
+  --marco: url('/sprites/marcos/doble-blanco.png');
+}
+.retrato[data-marco='esquinas-blanco'] {
+  --marco: url('/sprites/marcos/esquinas-blanco.png');
+}
+/* "Ventana de menú": el retrato va dentro de la misma ventana de SNES que el resto de la app,
+   como en las pantallas de estado de Final Fantasy IV y VI */
+.retrato[data-marco='ventana'] {
+  width: 168px;
+  height: 168px;
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
+  border-radius: 8px;
+  box-shadow: var(--ventana-marco);
+  filter: none;
+}
+.retrato[data-marco='ventana']::after {
+  display: none;
+}
+.retrato[data-marco='ventana'] .retrato-imagen {
+  inset: 10px;
+  border: 2px solid var(--marco-sombra);
+  border-radius: 3px;
+}
+/* Marco de avatar equipado en Steam: se dibuja encima del avatar y lo excede un 22 %, como en Steam */
+.retrato-steam {
+  width: 164px;
+  height: 164px;
+  margin: 18px;
+  filter: none;
+}
+.retrato-steam::after {
+  display: none;
+}
+.retrato-steam .retrato-imagen {
+  inset: 0;
+}
+.retrato-marco-steam {
+  position: absolute;
+  left: -11%;
+  top: -11%;
+  width: 122%;
+  height: 122%;
+  /* El reset de Tailwind limita las imágenes a max-width: 100%: el marco tiene que exceder al avatar */
+  max-width: none;
+  pointer-events: none;
+  image-rendering: auto;
+}
+
+/* Fondo de perfil de Steam: ocupa toda la página detrás del contenido, con un velo para leer */
+.fondo-perfil-steam {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #070718;
+}
+.fondo-perfil-steam img,
+.fondo-perfil-steam video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fondo-perfil-steam::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(7 7 24 / 0.45);
+}
+
+/* Barra de experiencia (estilo pantalla de estado de Final Fantasy) */
+.perfil-estado {
+  flex: 1;
+  min-width: 0;
+}
+.exp {
+  max-width: 420px;
+  margin: 0.5rem 0 0.25rem;
+  font-family: var(--pixel);
+}
+.exp-encabezado,
+.exp-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.exp-encabezado span:first-child {
+  color: var(--mp);
+}
+.exp-pie {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+.exp-barra {
+  height: 14px;
+  margin: 0.25rem 0;
+  padding: 2px;
+  background: #0a0a26;
+  border: 2px solid var(--marco);
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--marco-sombra);
+}
+.exp-relleno {
+  height: 100%;
+  background: linear-gradient(180deg, #b8f0ff 0%, #4fc3ff 45%, #1a78d0 100%);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.25);
+  animation: llenar-exp 0.8s steps(12) both;
+}
+@keyframes llenar-exp {
+  from {
+    width: 0;
+  }
+}
+
+/* Interruptores de Configuración: casilla de menú con ON / OFF */
+.interruptores {
+  display: grid;
+  gap: 0.9rem;
+}
+.interruptor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-family: var(--pixel);
+  cursor: pointer;
+}
+.interruptor input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.interruptor-caja {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  padding: 0.2rem 0;
+  font-size: 0.9rem;
+  background: #0a0a26;
+  border: 2px solid var(--bisel);
+  border-radius: 4px;
+  color: var(--texto-suave);
+}
+.interruptor-caja::before {
+  content: 'OFF';
+}
+.interruptor input:checked + .interruptor-caja {
+  background: linear-gradient(180deg, #ffe680, #e0a820);
+  border-color: var(--oro);
+  color: var(--oro-texto);
+  text-shadow: none;
+}
+.interruptor input:checked + .interruptor-caja::before {
+  content: 'ON';
+}
+.interruptor input:focus-visible + .interruptor-caja {
+  outline: 3px solid var(--oro);
+  outline-offset: 2px;
+}
+
+.salir-perfil {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Configuración ---------- */
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+.opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  background: #0a0a26;
+  border: 3px solid var(--bisel);
+  border-radius: 6px;
+  color: var(--texto);
+  font-family: var(--pixel);
+  font-size: 1rem;
+  text-shadow: var(--sombra-texto);
+  cursor: pointer;
+}
+.opcion:hover {
+  border-color: var(--marco);
+}
+.opcion[aria-pressed='true'] {
+  border-color: var(--oro);
+}
+.opcion-nombre {
+  display: flex;
+  align-items: center;
+}
+.muestra-fondo.fondo-animado {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  display: block;
+  width: 100%;
+  height: 110px;
+  border: 2px solid var(--marco);
+  border-radius: 4px;
+}
+.muestra-icono {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
 }
 .perfil-datos {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 .perfil-datos .insignia {
   margin-left: 0;
+}
+.nivel-steam {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--pixel);
+  font-size: 1.1rem;
+  color: var(--mp);
+}
+.nivel-steam strong {
+  font-size: 1.9rem;
+  color: var(--texto);
+  font-weight: normal;
+}
+.estado-personaje {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 1.5rem;
+  margin: 0.75rem 0 0;
+  font-family: var(--pixel);
+  font-size: 1rem;
+}
+.estado-personaje dt {
+  color: var(--mp);
+}
+.estado-personaje dd {
+  margin: 0;
 }
 
 /* ---------- Biblioteca ---------- */
@@ -827,86 +1153,79 @@ a.chip:hover {
 }
 .input-filtro {
   max-width: 360px;
-  margin: 0.75rem 0;
+  margin: 1rem 0;
 }
 .lista-biblioteca {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 .item-biblioteca {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: 8px;
-  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  padding: 0.6rem 1rem 0.6rem 0.6rem;
   color: var(--texto);
 }
 .item-biblioteca:hover {
-  text-decoration: none;
-  border-color: var(--acento);
+  color: var(--texto);
 }
 .item-nombre {
   flex: 1;
-  font-weight: 600;
   min-width: 0;
 }
 .item-horas {
-  color: var(--texto-suave);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--pixel);
+  font-size: 1.05rem;
+  color: var(--oro);
   white-space: nowrap;
 }
 
 /* ---------- Admin ---------- */
 .pestanias {
   display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--borde);
-  margin: 1rem 0 1.25rem;
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
   overflow-x: auto;
+  padding: 6px;
 }
 .pestanias button {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+  background: var(--ventana-fondo);
+  border: 3px solid var(--marco);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--marco-sombra), inset 0 0 0 2px var(--bisel);
   color: var(--texto-suave);
-  font: inherit;
-  font-weight: 600;
-  padding: 0.6rem 1rem;
+  text-shadow: var(--sombra-texto);
+  font-family: var(--pixel);
+  font-size: 1rem;
+  padding: 0.55rem 0.9rem;
   cursor: pointer;
   white-space: nowrap;
 }
 .pestanias button.activa {
-  color: var(--texto);
-  border-bottom-color: var(--acento);
+  color: var(--oro);
 }
 .tabla-envoltorio {
   overflow-x: auto;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
 }
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  background: var(--superficie);
-  font-size: 0.92rem;
 }
 .tabla th,
 .tabla td {
   padding: 0.55rem 0.75rem;
   text-align: left;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 2px dashed rgb(244 244 252 / 0.25);
   vertical-align: middle;
 }
 .tabla th {
-  color: var(--texto-suave);
-  font-weight: 600;
-  font-size: 0.82rem;
-  background: var(--fondo-2);
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: 0.95rem;
+  color: var(--mp);
 }
 .tabla tr:last-child td {
   border-bottom: none;
@@ -928,7 +1247,7 @@ a.chip:hover {
 }
 .form-linea {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: center;
   flex: 1;
 }
@@ -937,18 +1256,15 @@ a.chip:hover {
 }
 .lista-clasificacion {
   list-style: none;
-  padding: 0;
-  margin: 1rem 0 0;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  background: var(--superficie);
+  padding: 0.25rem 0;
+  margin: 1.25rem 0 0;
 }
 .lista-clasificacion li {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.55rem 0.9rem;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 2px dashed rgb(244 244 252 / 0.25);
   min-height: 52px;
 }
 .lista-clasificacion li:last-child {
@@ -960,35 +1276,8 @@ a.chip:hover {
   .juego-cabecera {
     grid-template-columns: 1fr;
   }
-  .usuario-nombre {
-    display: none;
-  }
 }
 @media (max-width: 640px) {
-  .encabezado-interno {
-    gap: 0.5rem 1rem;
-  }
-  .nav {
-    order: 3;
-    flex-basis: 100%;
-  }
-  .marca {
-    flex: 1;
-  }
-  .grupo-filtro {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-  }
-  .grilla-juegos {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.6rem;
-  }
-  .tarjeta-cuerpo {
-    padding: 0.5rem 0.6rem 0.7rem;
-  }
-  .tarjeta-cuerpo h3 {
-    font-size: 0.9rem;
-  }
   .resena-meta {
     align-items: flex-start;
   }
@@ -999,6 +1288,9 @@ a.chip:hover {
   .perfil-datos {
     justify-content: center;
   }
+  .estado-personaje {
+    text-align: left;
+  }
   .form-dev,
   .grilla-form {
     grid-template-columns: 1fr;
@@ -1007,15 +1299,257 @@ a.chip:hover {
     display: none;
   }
   .login-tarjeta {
-    padding: 1.5rem 1.1rem;
-  }
-  .barra-busqueda {
-    flex-direction: column;
-  }
-  .barra-busqueda select {
-    width: 100%;
+    padding: 1.75rem 1.1rem;
   }
   .form-linea {
     flex-wrap: wrap;
+  }
+}
+
+/* ================== Animaciones (RPG de 16 bits) ================== */
+
+/* 1. Las ventanas se abren desde una línea horizontal, como los menús de Final Fantasy */
+@keyframes abrir-ventana {
+  from {
+    transform: scaleY(0.04);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+h1,
+.panel,
+.resena,
+.perfil-cabecera,
+.filtros,
+.aviso,
+.tarjeta-juego,
+.item-biblioteca,
+.login-tarjeta,
+.tabla-envoltorio,
+.lista-clasificacion,
+.opcion,
+.vacio {
+  animation: abrir-ventana 0.22s steps(5, end) both;
+}
+.tarjeta-juego:nth-child(2),
+.lista-resenas > .resena:nth-child(2),
+.lista-biblioteca > li:nth-child(2) .item-biblioteca,
+.opciones > .opcion:nth-child(2) {
+  animation-delay: 35ms;
+}
+.tarjeta-juego:nth-child(3),
+.lista-resenas > .resena:nth-child(3),
+.lista-biblioteca > li:nth-child(3) .item-biblioteca,
+.opciones > .opcion:nth-child(3) {
+  animation-delay: 70ms;
+}
+.tarjeta-juego:nth-child(4),
+.lista-resenas > .resena:nth-child(4),
+.lista-biblioteca > li:nth-child(4) .item-biblioteca,
+.opciones > .opcion:nth-child(4) {
+  animation-delay: 105ms;
+}
+.tarjeta-juego:nth-child(5),
+.lista-resenas > .resena:nth-child(5),
+.lista-biblioteca > li:nth-child(5) .item-biblioteca,
+.opciones > .opcion:nth-child(5) {
+  animation-delay: 140ms;
+}
+.tarjeta-juego:nth-child(6),
+.lista-resenas > .resena:nth-child(6),
+.lista-biblioteca > li:nth-child(6) .item-biblioteca,
+.opciones > .opcion:nth-child(6) {
+  animation-delay: 175ms;
+}
+.tarjeta-juego:nth-child(7),
+.lista-resenas > .resena:nth-child(7),
+.lista-biblioteca > li:nth-child(7) .item-biblioteca,
+.opciones > .opcion:nth-child(7) {
+  animation-delay: 210ms;
+}
+.tarjeta-juego:nth-child(8),
+.lista-resenas > .resena:nth-child(8),
+.lista-biblioteca > li:nth-child(8) .item-biblioteca,
+.opciones > .opcion:nth-child(8) {
+  animation-delay: 245ms;
+}
+.tarjeta-juego:nth-child(9),
+.lista-resenas > .resena:nth-child(9),
+.lista-biblioteca > li:nth-child(9) .item-biblioteca,
+.opciones > .opcion:nth-child(9) {
+  animation-delay: 280ms;
+}
+.tarjeta-juego:nth-child(10),
+.lista-resenas > .resena:nth-child(10),
+.lista-biblioteca > li:nth-child(10) .item-biblioteca,
+.opciones > .opcion:nth-child(10) {
+  animation-delay: 315ms;
+}
+.tarjeta-juego:nth-child(11),
+.lista-resenas > .resena:nth-child(11),
+.lista-biblioteca > li:nth-child(11) .item-biblioteca,
+.opciones > .opcion:nth-child(11) {
+  animation-delay: 350ms;
+}
+.tarjeta-juego:nth-child(12),
+.lista-resenas > .resena:nth-child(12),
+.lista-biblioteca > li:nth-child(12) .item-biblioteca,
+.opciones > .opcion:nth-child(12) {
+  animation-delay: 385ms;
+}
+
+/* 2. Transición de batalla: dos destellos y un remolino a negro */
+@property --giro {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes destellos-batalla {
+  0%,
+  50% {
+    opacity: 0.85;
+  }
+  25%,
+  75%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes remolino {
+  to {
+    --giro: 360deg;
+  }
+}
+@keyframes aclarar {
+  to {
+    opacity: 0;
+  }
+}
+.batalla {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.batalla::before,
+.batalla::after {
+  content: '';
+  position: absolute;
+}
+.batalla::before {
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: destellos-batalla 0.24s steps(1) both;
+}
+.batalla::after {
+  inset: -50%;
+  background: conic-gradient(#000 var(--giro), transparent 0);
+  animation: remolino 0.28s 0.24s linear forwards;
+}
+.batalla-saliendo {
+  animation: aclarar 0.32s steps(4) forwards;
+}
+.batalla-saliendo::before {
+  display: none;
+}
+.batalla-saliendo::after {
+  --giro: 360deg;
+  animation: none;
+}
+
+/* 3. Diálogo letra por letra: la flecha ▼ titila al terminar */
+.aviso {
+  cursor: default;
+}
+.aviso-flecha {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.7em;
+  color: var(--oro);
+  animation: parpadeo 0.8s steps(1) infinite;
+}
+
+/* 4. Destello (fuegos artificiales de 8 cuadros de 40x40, al doble de tamaño) */
+@keyframes destello {
+  to {
+    background-position: -640px 0;
+  }
+}
+.destello {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80px;
+  height: 80px;
+  translate: -50% -50%;
+  background: url('/sprites/destello.png') 0 0 / 640px 80px no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 5;
+  animation: destello 0.6s steps(8) forwards;
+}
+.aviso-exito .destello {
+  left: 1.4rem;
+  top: 1.3rem;
+}
+.btn-valorar,
+.aviso {
+  position: relative;
+}
+
+/* 5. Números flotantes, como el daño en una batalla */
+@keyframes flotar {
+  0% {
+    translate: -50% 0;
+    opacity: 1;
+  }
+  20% {
+    translate: -50% -14px;
+  }
+  100% {
+    translate: -50% -34px;
+    opacity: 0;
+  }
+}
+.numero-flotante {
+  position: absolute;
+  left: 50%;
+  top: -0.4rem;
+  font-family: var(--pixel);
+  font-size: 1.3rem;
+  pointer-events: none;
+  z-index: 6;
+  text-shadow: 2px 2px 0 #000;
+  animation: flotar 0.8s steps(8) forwards;
+}
+.numero-bueno {
+  color: var(--hp);
+}
+.numero-malo {
+  color: var(--peligro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  h1,
+  .panel,
+  .resena,
+  .perfil-cabecera,
+  .filtros,
+  .aviso,
+  .tarjeta-juego,
+  .item-biblioteca,
+  .login-tarjeta,
+  .tabla-envoltorio,
+  .lista-clasificacion,
+  .opcion,
+  .vacio,
+  .aviso-flecha,
+  .exp-relleno {
+    animation: none;
   }
 }

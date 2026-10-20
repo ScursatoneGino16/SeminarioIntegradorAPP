@@ -9,6 +9,9 @@ Este documento resume cómo se integra la aplicación con Steam y qué hace falt
 | Iniciar sesión e identificar al usuario por SteamID (CU 1, 22) | **Steam OpenID 2.0**: `https://steamcommunity.com/openid/login` | No | `back/src/importadores/importadorSteamOpenID.ts` |
 | Nombre de perfil, avatar y visibilidad | `ISteamUser/GetPlayerSummaries/v2` o, sin clave, el XML público `steamcommunity.com/profiles/<steamid>/?xml=1` | Opcional | `obtenerDatosCuenta()` en el mismo archivo |
 | Biblioteca y horas de juego (CU 6, 7, RNF 10) | `IPlayerService/GetOwnedGames/v1` | **Sí** | `back/src/importadores/importadorBiblioteca.ts` |
+| Nivel y experiencia hacia el próximo nivel | `IPlayerService/GetBadges/v1` | **Sí** | `back/src/importadores/importadorPerfilSteam.ts` |
+| Antigüedad de la cuenta, juegos y horas totales | `GetPlayerSummaries` (`timecreated`) y `GetOwnedGames` | **Sí** | `importadorPerfilSteam.ts` |
+| Avatar animado, marco de avatar y fondo de perfil | `IPlayerService/GetProfileItemsEquipped/v1` (no documentado oficialmente) | No | `importadorPerfilSteam.ts` |
 | Datos descriptivos de los juegos (nombre, descripción, portada, géneros, etiquetas) | Se toman del **dataset** (ver README), no de la API | No | `back/src/modulos/catalogo/datasetSteam.ts` |
 
 > Steam OpenID solo devuelve el SteamID. Por eso el nombre y el avatar hay que pedirlos aparte. Sin clave se usa el XML público del perfil, que no requiere autenticación.
@@ -74,6 +77,12 @@ GET https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=<STEAM_AP
 ```
 
 Se usan `personaname`, `avatarfull` y `communityvisibilitystate` (3 = público).
+
+### Datos del perfil de Steam
+
+`GET /api/usuarios/{steamId}/steam` junta en una respuesta el nivel y la EXP (`GetBadges`), la antigüedad (`GetPlayerSummaries`), los juegos y horas totales (`GetOwnedGames`) y los ítems equipados (`GetProfileItemsEquipped`). Cada consulta se hace en paralelo con el tope de 5 s: si una falla o el perfil es privado, ese dato vuelve en `null` y el resto se muestra igual. La respuesta se guarda en memoria 30 minutos.
+
+En `GetProfileItemsEquipped`, `image_small` es la versión **animada** (APNG o GIF) e `image_large` una imagen fija, al revés de lo que sugieren los nombres. Las imágenes se sirven desde `https://cdn.akamai.steamstatic.com/steamcommunity/public/images/`.
 
 ## 5. Privacidad del usuario
 

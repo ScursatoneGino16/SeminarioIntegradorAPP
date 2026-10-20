@@ -45,8 +45,8 @@ export async function obtenerBiblioteca(steamId: string, appIdsCatalogo: number[
   };
 }
 
-/** Hash simple y determinístico para que la biblioteca simulada sea estable entre llamadas. */
-function hash(texto: string): number {
+/** Hash simple y determinístico para que los datos simulados sean estables entre llamadas. */
+export function hash(texto: string): number {
   let h = 2166136261;
   for (const c of texto) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
   return h >>> 0;

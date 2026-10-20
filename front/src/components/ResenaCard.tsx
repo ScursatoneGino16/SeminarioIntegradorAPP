@@ -5,6 +5,8 @@ import { fecha, horas } from '../formato';
 import { Avatar } from './Avatar';
 import { Estrellas } from './Estrellas';
 import { Portada } from './Portada';
+import { Rupia, Tacho } from './PixelArte';
+import { Destello, NumeroFlotante, useEfectos, type Flotante } from '../animaciones';
 
 interface Props {
   resena: Resena;
@@ -18,6 +20,12 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
   const [r, setR] = useState(resena);
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  // Efectos de un solo uso por botón: números flotantes y destello al dar una rupia
+  const numerosLike = useEfectos<Omit<Flotante, 'id'>>();
+  const numerosDislike = useEfectos<Omit<Flotante, 'id'>>();
+  const destellos = useEfectos<object>();
+
+  const firmar = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
   async function valorar(esLike: boolean) {
     setError(null);
@@ -25,6 +33,11 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
     try {
       const nuevo = r.miValoracion === esLike ? null : esLike;
       const res = await api.valorar(r.resenaId, nuevo);
+      const dLike = res.cantLike - r.cantLike;
+      const dDislike = res.cantDislike - r.cantDislike;
+      if (dLike) numerosLike.agregar({ texto: firmar(dLike), tipo: dLike > 0 ? 'bueno' : 'malo' });
+      if (dDislike) numerosDislike.agregar({ texto: firmar(dDislike), tipo: 'malo' });
+      if (dLike > 0) destellos.agregar({});
       setR({ ...r, ...res });
     } catch (e) {
       setError((e as ErrorApi).message);
@@ -70,7 +83,13 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
             aria-pressed={r.miValoracion === true}
             onClick={() => void valorar(true)}
           >
-            👍 <span>{r.cantLike}</span>
+            <Rupia /> <span>{r.cantLike}</span>
+            {destellos.efectos.map((d) => (
+              <Destello key={d.id} onFin={() => destellos.quitar(d.id)} />
+            ))}
+            {numerosLike.efectos.map((n) => (
+              <NumeroFlotante key={n.id} texto={n.texto} tipo={n.tipo} onFin={() => numerosLike.quitar(n.id)} />
+            ))}
           </button>
           <button
             className={`btn-valorar ${r.miValoracion === false ? 'activo activo-neg' : ''}`}
@@ -79,7 +98,10 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
             aria-pressed={r.miValoracion === false}
             onClick={() => void valorar(false)}
           >
-            👎 <span>{r.cantDislike}</span>
+            <Tacho /> <span>{r.cantDislike}</span>
+            {numerosDislike.efectos.map((n) => (
+              <NumeroFlotante key={n.id} texto={n.texto} tipo={n.tipo} onFin={() => numerosDislike.quitar(n.id)} />
+            ))}
           </button>
         </div>
 

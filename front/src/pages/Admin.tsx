@@ -3,6 +3,7 @@ import { api, type Categoria, type DatosVideojuego, type Etiqueta, type Pagina, 
 import { Aviso } from '../components/Aviso';
 import { Paginacion } from '../components/Paginacion';
 import { Portada } from '../components/Portada';
+import { Icono } from '../components/PixelArte';
 
 type Pestania = 'videojuegos' | 'categorias' | 'etiquetas' | 'importar';
 
@@ -10,7 +11,9 @@ export default function Admin() {
   const [pestania, setPestania] = useState<Pestania>('videojuegos');
   return (
     <div className="pagina-admin">
-      <h1>Administración</h1>
+      <h1>
+        <Icono nombre="corona" alto={22} /> Administración
+      </h1>
       <div className="pestanias" role="tablist">
         {(
           [

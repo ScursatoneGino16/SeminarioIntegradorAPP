@@ -3,6 +3,7 @@ import { prisma } from '../../db.js';
 import { config } from '../../config.js';
 import { noEncontrado } from '../../shared/errores.js';
 import { obtenerDatosCuenta, type DatosCuentaSteam } from '../../importadores/importadorSteamOpenID.js';
+import { obtenerPerfilSteam, type PerfilSteam } from '../../importadores/importadorPerfilSteam.js';
 import { obtenerBiblioteca } from '../../importadores/importadorBiblioteca.js';
 import { SteamNoDisponibleError } from '../../importadores/steamHttp.js';
 
@@ -78,6 +79,22 @@ export async function obtenerPerfil(steamId: string) {
   });
   if (!usuario) throw noEncontrado('Usuario no encontrado');
   return usuario;
+}
+
+const MINUTOS_CACHE_PERFIL_STEAM = 30;
+const cachePerfilSteam = new Map<string, { datos: PerfilSteam; vence: number }>();
+
+/**
+ * Datos del perfil de Steam (nivel y EXP, antigüedad, juegos y horas, marco y fondo).
+ * Se guardan en memoria 30 minutos para no consultar a Steam en cada visita (RNF 1).
+ */
+export async function perfilSteam(steamId: string): Promise<PerfilSteam> {
+  await obtenerUsuario(steamId);
+  const enCache = cachePerfilSteam.get(steamId);
+  if (enCache && enCache.vence > Date.now()) return enCache.datos;
+  const datos = await obtenerPerfilSteam(steamId);
+  cachePerfilSteam.set(steamId, { datos, vence: Date.now() + MINUTOS_CACHE_PERFIL_STEAM * 60_000 });
+  return datos;
 }
 
 export interface ResultadoBiblioteca {

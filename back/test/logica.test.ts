@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { deltaValoracion } from '../src/modulos/resenas/organizarResena.js';
 import { construirFiltro } from '../src/modulos/catalogo/catalogo.service.js';
 import { campoXml, construirUrlLogin, extraerSteamId } from '../src/importadores/importadorSteamOpenID.js';
+import { perfilSimulado } from '../src/importadores/importadorPerfilSteam.js';
 import { bibliotecaSimulada } from '../src/importadores/importadorBiblioteca.js';
 import { modificarResenaSchema } from '../src/modulos/resenas/resena.service.js';
 import { desdeDatasetSteam } from '../src/modulos/catalogo/datasetSteam.js';
@@ -88,6 +89,20 @@ describe('desdeDatasetSteam', () => {
     expect(desdeDatasetSteam('10', { name: 'X', tags: [] })?.etiquetas).toEqual([]);
     expect(desdeDatasetSteam('10', { name: '  ' })).toBeNull();
     expect(desdeDatasetSteam('abc', { name: 'X' })).toBeNull();
+  });
+});
+
+describe('perfilSimulado', () => {
+  it('es estable, con nivel de 1 a 60 y EXP coherente', () => {
+    const p = perfilSimulado('76561198000000002');
+    expect(p).toEqual(perfilSimulado('76561198000000002'));
+    expect(p.nivel).toBeGreaterThanOrEqual(1);
+    expect(p.nivel).toBeLessThanOrEqual(60);
+    expect(p.experiencia!.actual).toBeGreaterThanOrEqual(p.experiencia!.inicioNivel);
+    expect(p.experiencia!.faltante).toBeGreaterThan(0);
+  });
+  it('SteamID terminado en 000 simula un perfil privado', () => {
+    expect(perfilSimulado('76561198000000000').nivel).toBeNull();
   });
 });
 
