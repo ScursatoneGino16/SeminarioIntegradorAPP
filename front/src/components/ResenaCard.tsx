@@ -5,22 +5,26 @@ import { fecha, horas } from '../formato';
 import { Avatar } from './Avatar';
 import { Estrellas } from './Estrellas';
 import { Portada } from './Portada';
-import { Rupia, Tacho } from './PixelArte';
+import { ManitoDislike, ManitoLike } from './PixelArte';
 import { Destello, NumeroFlotante, useEfectos, type Flotante } from '../animaciones';
+import { InsigniaResena } from './Medalla';
+import { AdjuntosResena } from './Adjuntos';
 
 interface Props {
   resena: Resena;
   /** Qué se muestra como "autor" de la tarjeta: el usuario (página del juego) o el juego (perfil). */
   mostrar: 'usuario' | 'videojuego';
+  /** Con `mostrar="usuario"`, agrega el nombre del juego (actividad de amigos). */
+  conJuego?: boolean;
   onEditar?: () => void;
   onEliminar?: () => void;
 }
 
-export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
+export function ResenaCard({ resena, mostrar, conJuego, onEditar, onEliminar }: Props) {
   const [r, setR] = useState(resena);
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  // Efectos de un solo uso por botón: números flotantes y destello al dar una rupia
+  // Efectos de un solo uso por botón: números flotantes y destello al dar like
   const numerosLike = useEfectos<Omit<Flotante, 'id'>>();
   const numerosDislike = useEfectos<Omit<Flotante, 'id'>>();
   const destellos = useEfectos<object>();
@@ -56,12 +60,22 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
             <span>
               <strong>{r.usuario.nombreUsuario}</strong>
               {r.esPropia && <span className="insignia">Tu reseña</span>}
+              {r.insignia && <InsigniaResena insignia={r.insignia} />}
             </span>
           </Link>
         ) : (
           <Link to={`/videojuegos/${r.videojuego.appId}`} className="resena-autor">
             <Portada url={r.videojuego.imagenUrl} nombre={r.videojuego.nombre} className="portada-mini" />
-            <strong>{r.videojuego.nombre}</strong>
+            <span>
+              <strong>{r.videojuego.nombre}</strong>
+              {r.insignia && <InsigniaResena insignia={r.insignia} />}
+            </span>
+          </Link>
+        )}
+        {conJuego && mostrar === 'usuario' && (
+          <Link to={`/videojuegos/${r.videojuego.appId}`} className="resena-juego">
+            <Portada url={r.videojuego.imagenUrl} nombre={r.videojuego.nombre} className="portada-mini" />
+            <span>{r.videojuego.nombre}</span>
           </Link>
         )}
         <div className="resena-meta">
@@ -73,6 +87,7 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
       </header>
 
       <p className="resena-texto">{r.comentario}</p>
+      <AdjuntosResena adjuntos={r.adjuntos} />
 
       <footer className="resena-pie">
         <div className="resena-acciones">
@@ -83,7 +98,7 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
             aria-pressed={r.miValoracion === true}
             onClick={() => void valorar(true)}
           >
-            <Rupia /> <span>{r.cantLike}</span>
+            <ManitoLike /> <span>{r.cantLike}</span>
             {destellos.efectos.map((d) => (
               <Destello key={d.id} onFin={() => destellos.quitar(d.id)} />
             ))}
@@ -98,7 +113,7 @@ export function ResenaCard({ resena, mostrar, onEditar, onEliminar }: Props) {
             aria-pressed={r.miValoracion === false}
             onClick={() => void valorar(false)}
           >
-            <Tacho /> <span>{r.cantDislike}</span>
+            <ManitoDislike /> <span>{r.cantDislike}</span>
             {numerosDislike.efectos.map((n) => (
               <NumeroFlotante key={n.id} texto={n.texto} tipo={n.tipo} onFin={() => numerosDislike.quitar(n.id)} />
             ))}

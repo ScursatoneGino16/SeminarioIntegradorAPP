@@ -4,6 +4,7 @@
 import { createReadStream } from 'node:fs';
 import streamObject from 'stream-json/streamers/stream-object.js';
 import type { ItemDataset } from './catalogo.service.js';
+import { esContenidoAdulto } from './contenidoNoApto.js';
 
 export const URL_DATASET_STEAM =
   'https://huggingface.co/datasets/FronkonGames/steam-games-dataset/resolve/main/games.json';
@@ -12,7 +13,7 @@ export const URL_DATASET_STEAM =
 const MAX_ETIQUETAS = 20;
 
 /** Los géneros de Steam se usan como Categorías y se traducen al español. */
-const GENEROS_ES: Record<string, string> = {
+export const GENEROS_ES: Record<string, string> = {
   Action: 'Acción',
   Adventure: 'Aventura',
   Casual: 'Casual',
@@ -80,6 +81,7 @@ export function desdeDatasetSteam(clave: string, juego: JuegoDatasetSteam): Item
     categorias: (juego.genres ?? []).map((g) => GENEROS_ES[g] ?? g),
     etiquetas: etiquetas.slice(0, MAX_ETIQUETAS),
     votosSteam: Math.max(0, Math.trunc((juego.positive ?? 0) + (juego.negative ?? 0))),
+    contenidoAdulto: esContenidoAdulto(Array.isArray(juego.tags) ? {} : (juego.tags ?? {})),
   };
 }
 

@@ -16,7 +16,7 @@ export function crearMiddlewareSesion(): RequestHandler {
   const PgStore = connectPgSimple(session);
   const maxAge = config.sessionMinutosInactividad * 60 * 1000;
   return session({
-    name: 'resenas.sid',
+    name: 'steamvault.sid',
     secret: config.sessionSecret,
     store: new PgStore({
       conString: process.env.DATABASE_URL,

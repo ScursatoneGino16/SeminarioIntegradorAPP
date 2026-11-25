@@ -12,6 +12,7 @@ import {
 import { SteamNoDisponibleError } from '../../importadores/steamHttp.js';
 import { ErrorApp } from '../../shared/errores.js';
 import { requiereAutenticacion, usuarioActual } from './sesion.js';
+import { insigniasDeUsuario } from '../insignias/insignias.service.js';
 import {
   obtenerPerfil,
   perfilSteam,
@@ -45,6 +46,8 @@ authRouter.get('/estado', async (req, res) => {
     usuario,
     modoSimulado: config.steamMock,
     minutosInactividad: config.sessionMinutosInactividad,
+    gifsHabilitados: config.giphyApiKey !== '',
+    maxMbImagen: config.maxMbImagen,
   });
 });
 
@@ -102,7 +105,7 @@ authRouter.post('/dev-login', async (req, res) => {
 authRouter.post('/logout', (req, res, next) => {
   req.session.destroy((e) => {
     if (e) return next(e);
-    res.clearCookie('resenas.sid');
+    res.clearCookie('steamvault.sid');
     res.status(204).end();
   });
 });
@@ -114,10 +117,14 @@ usuarioRouter.get('/me/biblioteca', async (req, res) => {
   res.json(await sincronizarBiblioteca(usuarioActual(req)));
 });
 
+usuarioRouter.get('/:steamId/insignias', async (req, res) => {
+  res.json(await insigniasDeUsuario(req.params.steamId));
+});
+
 usuarioRouter.get('/:steamId/steam', async (req, res) => {
   res.json(await perfilSteam(req.params.steamId));
 });
 
 usuarioRouter.get('/:steamId', async (req, res) => {
-  res.json(await obtenerPerfil(req.params.steamId));
+  res.json(await obtenerPerfil(req.params.steamId, usuarioActual(req)));
 });

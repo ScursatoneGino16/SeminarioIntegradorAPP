@@ -687,6 +687,8 @@ input:disabled {
 }
 .juego-descripcion {
   color: #e4e7ff;
+  /* Separa la sinopsis de los chips de categorías y etiquetas */
+  margin-bottom: 1.5rem;
 }
 .panel {
   padding: 1.4rem;
@@ -821,16 +823,24 @@ input:disabled {
 
 /* ---------- Perfil: pantalla de estado del personaje ---------- */
 .perfil-cabecera {
+  padding: 1.5rem;
+}
+.perfil-principal {
   display: flex;
   gap: 1.75rem;
   align-items: center;
-  padding: 1.5rem;
 }
 .perfil-cabecera h1 {
   font-family: var(--texto-rpg);
   font-size: clamp(1.5rem, 3vw, 2rem);
   color: var(--oro);
-  margin-bottom: 0.4rem;
+  margin: 0;
+}
+.perfil-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
 }
 /* Retrato del personaje dentro de un marco CC0 (ver public/sprites/CREDITOS.md) */
 .retrato {
@@ -958,28 +968,10 @@ input:disabled {
   background: rgb(7 7 24 / 0.45);
 }
 
-/* Barra de experiencia (estilo pantalla de estado de Final Fantasy) */
+/* Barra de progreso (estilo pantalla de estado de Final Fantasy) */
 .perfil-estado {
   flex: 1;
   min-width: 0;
-}
-.exp {
-  max-width: 420px;
-  margin: 0.5rem 0 0.25rem;
-  font-family: var(--pixel);
-}
-.exp-encabezado,
-.exp-pie {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.exp-encabezado span:first-child {
-  color: var(--mp);
-}
-.exp-pie {
-  font-size: 0.85rem;
-  color: var(--texto-suave);
 }
 .exp-barra {
   height: 14px;
@@ -1109,7 +1101,7 @@ input:disabled {
   gap: 1.25rem;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
 }
 .perfil-datos .insignia {
   margin-left: 0;
@@ -1127,19 +1119,27 @@ input:disabled {
   color: var(--texto);
   font-weight: normal;
 }
-.estado-personaje {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.15rem 1.5rem;
-  margin: 0.75rem 0 0;
+/* Números del perfil: Juegos · Horas · Reseñas · Amigos */
+.perfil-numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0.9rem 0 0;
   font-family: var(--pixel);
-  font-size: 1rem;
 }
-.estado-personaje dt {
-  color: var(--mp);
+/* El número arriba de la etiqueta, sin romper el orden dt → dd del HTML */
+.perfil-numeros div {
+  display: flex;
+  flex-direction: column-reverse;
 }
-.estado-personaje dd {
+.perfil-numeros dd {
   margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+.perfil-numeros dt {
+  font-size: 0.8rem;
+  color: var(--mp);
 }
 
 /* ---------- Biblioteca ---------- */
@@ -1281,15 +1281,17 @@ input:disabled {
   .resena-meta {
     align-items: flex-start;
   }
-  .perfil-cabecera {
+  .perfil-principal {
     flex-direction: column;
     text-align: center;
   }
-  .perfil-datos {
+  .perfil-nombre,
+  .perfil-datos,
+  .perfil-numeros {
     justify-content: center;
   }
-  .estado-personaje {
-    text-align: left;
+  .rango-cuenta {
+    margin-inline: auto;
   }
   .form-dev,
   .grilla-form {
@@ -1551,5 +1553,625 @@ h1,
   .aviso-flecha,
   .exp-relleno {
     animation: none;
+  }
+}
+
+/* ---------- Insignias por horas y prestigio ---------- */
+.rango-recien-llegado {
+  --rango: #c08a50;
+}
+.rango-explorador {
+  --rango: #f5b08a;
+}
+.rango-combatiente {
+  --rango: #f2b27a;
+}
+.rango-veterano {
+  --rango: #c9cde8;
+}
+.rango-experto {
+  --rango: #ffffff;
+}
+.rango-maestro {
+  --rango: var(--oro);
+}
+.rango-campeon {
+  --rango: #5ae08f;
+}
+.rango-leyenda {
+  --rango: #ff8a96;
+}
+.rango-heroe-de-leyenda {
+  --rango: var(--mp);
+}
+.rango-trascendente {
+  --rango: #ff8ae0;
+}
+.medalla {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.insignia-rango {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.6rem;
+  font-family: var(--pixel);
+  font-size: 0.85rem;
+  color: var(--rango);
+  vertical-align: middle;
+}
+/* Rango de cuenta (horas totales de Steam) */
+.cuenta-novato {
+  --rango: var(--texto-suave);
+}
+.cuenta-aprendiz {
+  --rango: #c08a50;
+}
+.cuenta-aventurero {
+  --rango: #f2b27a;
+}
+.cuenta-guerrero {
+  --rango: #c9cde8;
+}
+.cuenta-maestro {
+  --rango: var(--oro);
+}
+.cuenta-paladin {
+  --rango: #5ae08f;
+}
+.cuenta-heroe-legendario {
+  --rango: var(--mp);
+}
+.cuenta-mitico {
+  --rango: #ff8ae0;
+}
+/* Rango de cuenta en la cabecera del perfil: título, barra y horas que faltan */
+.rango-cuenta {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr);
+  align-items: center;
+  gap: 0.1rem 1rem;
+  max-width: 460px;
+  margin-top: 0.5rem;
+}
+.rango-cuenta .texto-chico {
+  grid-column: 2;
+}
+.rango-titulo {
+  font-family: var(--pixel);
+  font-size: 1.15rem;
+  color: var(--rango);
+  white-space: nowrap;
+}
+.rango-numero {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.perfil-privado {
+  margin: 1.25rem 0 0;
+}
+
+/* Insignias por juego, dentro de la misma ventana del perfil */
+.perfil-insignias {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 2px dashed rgb(244 244 252 / 0.25);
+}
+.perfil-insignias ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.5rem;
+}
+.insignia-juego {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.5rem;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  color: var(--texto);
+  font-size: 0.9rem;
+  min-width: 0;
+}
+.insignia-juego:hover {
+  border-color: var(--rango);
+}
+.insignia-juego > span {
+  display: grid;
+  min-width: 0;
+}
+.insignia-juego strong {
+  font-weight: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.insignia-juego .texto-chico {
+  font-family: var(--pixel);
+  color: var(--rango);
+}
+
+@media (max-width: 640px) {
+  .perfil-insignias ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .insignia-juego {
+    text-align: left;
+  }
+}
+
+/* ---------- GIFs e imágenes en las reseñas ---------- */
+.adjuntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: -0.25rem 0 0.9rem;
+}
+.adjunto {
+  position: relative;
+  display: block;
+  border: 2px solid var(--marco);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--marco-sombra);
+  overflow: hidden;
+  background: #0a0a26;
+}
+.adjunto img {
+  display: block;
+  max-height: 180px;
+  max-width: min(100%, 320px);
+}
+a.adjunto:hover {
+  border-color: var(--oro);
+}
+.adjunto-quitar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--marco);
+  border-radius: 3px;
+  background: var(--marco-sombra);
+  color: var(--texto);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.adjunto-quitar:hover {
+  color: var(--peligro);
+  border-color: var(--peligro);
+}
+.editor-adjuntos {
+  margin-bottom: 1rem;
+}
+.editor-adjuntos .adjuntos {
+  margin: 0 0 0.75rem;
+}
+.editor-adjuntos .fila-botones {
+  align-items: center;
+}
+.editor-adjuntos .btn-archivo {
+  margin-bottom: 0;
+}
+.btn-archivo.deshabilitado {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.selector-gif {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgb(8 8 30 / 0.6);
+  border: 2px solid var(--bisel);
+  border-radius: 4px;
+}
+.selector-gif-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.4rem;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 0.6rem;
+}
+.selector-gif-grilla button {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  background: #0a0a26;
+  cursor: pointer;
+}
+.selector-gif-grilla button:hover,
+.selector-gif-grilla button:focus-visible {
+  border-color: var(--oro);
+}
+.selector-gif-grilla img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+.selector-gif-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* ---------- Próximos lanzamientos ---------- */
+.panel-lanzamiento {
+  border-color: var(--mp);
+}
+.lanzamiento-fecha {
+  font-size: 1.1rem;
+}
+.lanzamiento-fecha strong {
+  color: var(--oro);
+  font-weight: normal;
+}
+.panel-lanzamiento .form-aviso,
+.aviso-pedido {
+  margin-top: 1.25rem;
+}
+.form-aviso input {
+  max-width: 360px;
+}
+.calendario-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+.calendario-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.25rem 0 1rem;
+}
+.calendario-nav h2 {
+  margin: 0;
+  min-width: 12ch;
+  text-align: center;
+}
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.calendario-dia-semana {
+  font-family: var(--pixel);
+  color: var(--mp);
+  text-align: center;
+  padding: 0.25rem 0;
+}
+.calendario-celda {
+  min-height: 110px;
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: rgb(8 8 30 / 0.6);
+  border: 2px solid rgb(143 151 196 / 0.5);
+  border-radius: 3px;
+  min-width: 0;
+}
+.calendario-relleno {
+  background: none;
+  border-color: transparent;
+}
+.calendario-hoy {
+  border-color: var(--oro);
+}
+.calendario-hoy .calendario-numero {
+  color: var(--oro);
+}
+.calendario-numero {
+  font-family: var(--pixel);
+  color: var(--texto-suave);
+}
+.calendario-nombre-dia {
+  display: none;
+  text-transform: capitalize;
+}
+.lanzamiento {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--texto);
+  min-width: 0;
+}
+.lanzamiento > span {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.lanzamiento:hover {
+  color: var(--oro);
+}
+.lanzamiento .portada-mini {
+  width: 44px;
+}
+.lanzamiento-aviso {
+  color: var(--mp);
+}
+.lista-sin-fecha {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 0.75rem;
+}
+.lista-sin-fecha li {
+  display: grid;
+  gap: 0.2rem;
+}
+.lista-sin-fecha .lanzamiento {
+  font-size: 0.95rem;
+}
+.lista-sin-fecha .lanzamiento .portada-mini {
+  width: 72px;
+}
+
+/* En pantallas chicas el calendario pasa a ser una agenda: solo los días con lanzamientos. */
+@media (max-width: 760px) {
+  .calendario {
+    grid-template-columns: 1fr;
+  }
+  .calendario-dia-semana,
+  .calendario-relleno,
+  .calendario-vacia {
+    display: none;
+  }
+  .calendario-celda {
+    min-height: 0;
+  }
+  .calendario-dia {
+    display: none;
+  }
+  .calendario-nombre-dia {
+    display: inline;
+  }
+  .lanzamiento {
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------- Notificaciones (campanita del encabezado) ---------- */
+.campanita {
+  position: relative;
+}
+/* Sin recuadro: la campana va directo sobre la barra, como un ícono más del menú */
+.campanita-boton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.campanita-icono {
+  display: block;
+  transform-origin: 50% 10%;
+  filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.55));
+}
+.campanita-boton:hover .campanita-icono,
+.campanita-boton[aria-expanded='true'] .campanita-icono {
+  filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.55)) drop-shadow(0 0 4px var(--oro));
+}
+.campanita-boton:focus-visible {
+  outline-offset: 0;
+}
+
+/* Hay notificaciones sin leer: la campana se hamaca cada 4 s y el contador late */
+@keyframes campana-hamaca {
+  0%,
+  76%,
+  100% {
+    transform: rotate(0);
+  }
+  80% {
+    transform: rotate(18deg);
+  }
+  84% {
+    transform: rotate(-16deg);
+  }
+  88% {
+    transform: rotate(12deg);
+  }
+  92% {
+    transform: rotate(-8deg);
+  }
+  96% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes contador-latido {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(255 107 107 / 0.7);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgb(255 107 107 / 0);
+  }
+}
+.con-avisos .campanita-icono {
+  animation: campana-hamaca 4s steps(1, end) infinite;
+}
+.con-avisos .campanita-contador {
+  animation: contador-latido 1.2s steps(4) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .con-avisos .campanita-icono,
+  .con-avisos .campanita-contador {
+    animation: none;
+  }
+}
+.campanita-contador {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 20px;
+  padding: 2px 4px;
+  font-family: var(--pixel);
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #fff;
+  background: var(--peligro);
+  border: 2px solid var(--marco-sombra);
+  border-radius: 3px;
+  text-shadow: none;
+}
+.campanita-contador.en-linea {
+  position: static;
+  margin-left: 0.4rem;
+}
+.campanita-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 30;
+  width: min(380px, calc(100vw - 32px));
+  padding: 0.75rem;
+}
+.campanita-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--pixel);
+}
+.campanita-todas {
+  display: block;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+.lista-notificaciones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+.pagina-notificaciones .lista-notificaciones {
+  max-height: none;
+}
+.notificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px dashed rgb(244 244 252 / 0.2);
+  color: var(--texto-suave);
+  font: inherit;
+  text-align: left;
+  text-shadow: var(--sombra-texto);
+  cursor: pointer;
+}
+.notificacion:hover {
+  background: rgb(8 8 30 / 0.4);
+}
+.notificacion-nueva {
+  color: var(--texto);
+}
+.notificacion-nueva::after {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  background: var(--oro);
+  box-shadow: 0 0 0 2px var(--marco-sombra);
+}
+.notificacion .avatar {
+  flex-shrink: 0;
+}
+.notificacion-icono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  flex-shrink: 0;
+}
+.notificacion-fecha {
+  display: block;
+}
+
+/* ---------- Amigos ---------- */
+.boton-amistad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin: 0.9rem 0 0.25rem;
+}
+.boton-amistad .insignia {
+  margin-left: 0;
+}
+.lista-usuarios {
+  list-style: none;
+  padding: 0.5rem 1rem;
+  margin: 0.75rem 0 1.5rem;
+}
+.fila-usuario {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0;
+  border-bottom: 2px dashed rgb(244 244 252 / 0.2);
+}
+.fila-usuario:last-child {
+  border-bottom: none;
+}
+.fila-usuario-detalle {
+  display: block;
+}
+.fila-usuario-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.resena-juego {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--pixel);
+  color: var(--texto-suave);
+}
+.resena-juego:hover {
+  color: var(--oro);
+}
+.resena-juego .portada-mini {
+  width: 64px;
+}
+.pestanias-chicas {
+  margin: 0;
+  padding: 4px;
+}
+.pestanias-chicas button {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+}
+@media (max-width: 640px) {
+  .boton-amistad {
+    justify-content: center;
   }
 }

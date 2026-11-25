@@ -22,6 +22,11 @@ export const manejadorErrores: ErrorRequestHandler = (err, _req, res, _next) => 
     res.status(err.status).json({ error: err.message, codigo: err.codigo });
     return;
   }
+  // Errores del lector de cuerpos de Express (p. ej. imagen demasiado grande)
+  if ((err as { type?: string }).type === 'entity.too.large') {
+    res.status(413).json({ error: 'El archivo es demasiado grande', codigo: 'DEMASIADO_GRANDE' });
+    return;
+  }
   if (err instanceof ZodError) {
     res.status(400).json({
       error: 'Datos inválidos',

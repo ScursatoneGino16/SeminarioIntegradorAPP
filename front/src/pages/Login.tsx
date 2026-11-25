@@ -45,7 +45,7 @@ export default function Login() {
         <div className="login-logo">
           <Estrellas valor={5} tam={30} />
         </div>
-        <h1>Reseñas</h1>
+        <h1>SteamVault</h1>
         <p className="login-subtitulo">— Crónicas de Steam —</p>
         <p className="texto-suave">
           Consultá el catálogo, leé lo que opina la comunidad y publicá reseñas de los juegos de tu biblioteca, junto con

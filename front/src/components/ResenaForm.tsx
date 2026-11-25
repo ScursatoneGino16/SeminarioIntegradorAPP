@@ -1,18 +1,21 @@
 import { useState, type FormEvent } from 'react';
+import type { Adjunto, ContenidoResena } from '../api';
 import { SelectorEstrellas } from './Estrellas';
+import { EditorAdjuntos } from './Adjuntos';
 
 const MAX = 1200;
 
 interface Props {
-  inicial?: { calificacion: number; comentario: string };
+  inicial?: ContenidoResena;
   textoBoton: string;
-  onEnviar: (calificacion: number, comentario: string) => Promise<void>;
+  onEnviar: (contenido: ContenidoResena) => Promise<void>;
   onCancelar?: () => void;
 }
 
 export function ResenaForm({ inicial, textoBoton, onEnviar, onCancelar }: Props) {
   const [calificacion, setCalificacion] = useState(inicial?.calificacion ?? 0);
   const [comentario, setComentario] = useState(inicial?.comentario ?? '');
+  const [adjuntos, setAdjuntos] = useState<Adjunto[]>(inicial?.adjuntos ?? []);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -23,7 +26,7 @@ export function ResenaForm({ inicial, textoBoton, onEnviar, onCancelar }: Props)
     setError(null);
     setEnviando(true);
     try {
-      await onEnviar(calificacion, comentario.trim());
+      await onEnviar({ calificacion, comentario: comentario.trim(), adjuntos });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -46,6 +49,7 @@ export function ResenaForm({ inicial, textoBoton, onEnviar, onCancelar }: Props)
         />
         <span className={`contador ${restantes < 100 ? 'contador-alerta' : ''}`}>{restantes} caracteres restantes</span>
       </label>
+      <EditorAdjuntos adjuntos={adjuntos} onChange={setAdjuntos} />
       {error && <p className="error-chico">{error}</p>}
       <div className="fila-botones">
         {onCancelar && (

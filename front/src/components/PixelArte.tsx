@@ -4,7 +4,7 @@ import { usePreferencias, type Preferencias } from '../preferencias';
  * Dibuja un sprite a partir de un mapa de caracteres: cada carácter es un píxel
  * y su color sale de la paleta ("." = transparente).
  */
-function Sprite({ mapa, paleta, alto }: { mapa: string[]; paleta: Record<string, string>; alto: number }) {
+export function Sprite({ mapa, paleta, alto }: { mapa: string[]; paleta: Record<string, string>; alto: number }) {
   const ancho = mapa[0].length;
   return (
     <svg
@@ -24,51 +24,91 @@ function Sprite({ mapa, paleta, alto }: { mapa: string[]; paleta: Record<string,
   );
 }
 
-// Rupia verde: borde oscuro, brillo a la izquierda y sombra a la derecha.
-const RUPIA = [
-  '...a...',
-  '..aca..',
-  '.acbda.',
-  'acbbbda',
-  'acbbbda',
-  'acbbbda',
-  'acbbbda',
-  'acbbbda',
-  'acbbbda',
-  '.acbda.',
-  '..ada..',
-  '...a...',
+// Manito con el pulgar arriba: puño de piel, dedos marcados y puño de la manga a la izquierda.
+const MANITO = [
+  '.....aa.....',
+  '....abba....',
+  '....abba....',
+  '...abbba....',
+  '..abbbbaaaa.',
+  'aaabbbbbbbba',
+  'acabbbbaaaaa',
+  'acabbbbbbbba',
+  'acabbbbaaaaa',
+  'acabbbbbbbba',
+  'acabbbbaaaa.',
+  'aaabbbbbbba.',
+  '..aaaaaaaa..',
 ];
-const PALETA_RUPIA = { a: '#0b3d17', b: '#2fbf4f', c: '#9dffb0', d: '#167a2e' };
+const PALETA_LIKE = { a: '#2a2d4a', b: '#ffd2a1', c: '#2fbf4f' };
+const PALETA_DISLIKE = { a: '#2a2d4a', b: '#ffd2a1', c: '#d83a4a' };
 
-// Tacho de basura metálico con tapa y ranuras.
-const TACHO = [
-  '...aaa...',
-  '.aaaaaaa.',
-  'abbbbbbba',
-  'aaaaaaaaa',
-  '.abcbcba.',
-  '.abcbcba.',
-  '.abcbcba.',
-  '.abcbcba.',
-  '.abcbcba.',
-  '.abbbbba.',
-  '..aaaaa..',
-];
-const PALETA_TACHO = { a: '#2a2d4a', b: '#c9cde8', c: '#7d82ab' };
-
-export const Rupia = ({ alto = 18 }: { alto?: number }) => <Sprite mapa={RUPIA} paleta={PALETA_RUPIA} alto={alto} />;
-export const Tacho = ({ alto = 18 }: { alto?: number }) => <Sprite mapa={TACHO} paleta={PALETA_TACHO} alto={alto} />;
+export const ManitoLike = ({ alto = 18 }: { alto?: number }) => (
+  <Sprite mapa={MANITO} paleta={PALETA_LIKE} alto={alto} />
+);
+/** Pulgar abajo: el mismo sprite espejado verticalmente. */
+export const ManitoDislike = ({ alto = 18 }: { alto?: number }) => (
+  <Sprite mapa={[...MANITO].reverse()} paleta={PALETA_DISLIKE} alto={alto} />
+);
 
 /** Cursor de mano estilo Chrono Trigger (public/sprites/mano.png, ver CREDITOS.md). */
 export const Mano = ({ className = '' }: { className?: string }) => <span className={`mano ${className}`} aria-hidden />;
 
-export type NombreIcono = 'espada' | 'cofre' | 'armadura' | 'corona';
+// Calendario de pared: anillas, encabezado rojo y días.
+const CALENDARIO = [
+  '..a...a..',
+  'aabaaabaa',
+  'accccccca',
+  'accccccca',
+  'addddddda',
+  'adedeeeda',
+  'addddddda',
+  'adeedeeda',
+  'addddddda',
+  'aaaaaaaaa',
+];
+const PALETA_CALENDARIO = { a: '#2a2d4a', b: '#c9cde8', c: '#d83a4a', d: '#f4f4fc', e: '#7d82ab' };
 
-/** Íconos de ítem CC0 (public/sprites, ver CREDITOS.md). */
-export const Icono = ({ nombre, alto = 18 }: { nombre: NombreIcono; alto?: number }) => (
-  <img src={`/sprites/${nombre}.png`} alt="" height={alto} width={alto} style={{ imageRendering: 'pixelated' }} />
-);
+// Dos aventureros: un mago azul y una arquera verde.
+const AMIGOS = [
+  '.aaa...bbb..',
+  '.aca...bdb..',
+  '.aaa...bbb..',
+  '............',
+  'aaaaa.bbbbb.',
+  'aacaa.bbdbb.',
+  'aaaaa.bbbbb.',
+];
+const PALETA_AMIGOS = { a: '#7fd8ff', b: '#48e078', c: '#08304a', d: '#0b3d17' };
+
+// Campana dorada con badajo
+const CAMPANA = [
+  '....a....',
+  '...aaa...',
+  '..abbca..',
+  '.abbbbca.',
+  '.abbbbca.',
+  '.abbbbca.',
+  'abbbbbbca',
+  'aaaaaaaaa',
+  '...ada...',
+  '....a....',
+];
+const PALETA_CAMPANA = { a: '#4a3000', b: '#ffd447', c: '#b07a10', d: '#c9cde8' };
+
+export const Campana = ({ alto = 20 }: { alto?: number }) => <Sprite mapa={CAMPANA} paleta={PALETA_CAMPANA} alto={alto} />;
+
+export type NombreIcono = 'espada' | 'cofre' | 'armadura' | 'corona' | 'calendario' | 'amigos';
+
+/** Íconos de ítem CC0 (public/sprites, ver CREDITOS.md); el calendario se dibuja acá. */
+export const Icono = ({ nombre, alto = 18 }: { nombre: NombreIcono; alto?: number }) =>
+  nombre === 'calendario' ? (
+    <Sprite mapa={CALENDARIO} paleta={PALETA_CALENDARIO} alto={alto} />
+  ) : nombre === 'amigos' ? (
+    <Sprite mapa={AMIGOS} paleta={PALETA_AMIGOS} alto={alto * 0.8} />
+  ) : (
+    <img src={`/sprites/${nombre}.png`} alt="" height={alto} width={alto} style={{ imageRendering: 'pixelated' }} />
+  );
 
 /** Fondo animado: cielo nocturno y nubes pixeladas que se desplazan despacio (ver CREDITOS.md). */
 export function FondoAnimado() {

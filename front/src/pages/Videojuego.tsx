@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api, type Pagina, type Resena, type Videojuego } from '../api';
+import { api, type ContenidoResena, type Pagina, type Resena, type Videojuego } from '../api';
 import { Portada } from '../components/Portada';
 import { Estrellas } from '../components/Estrellas';
 import { ResenaCard } from '../components/ResenaCard';
 import { ResenaForm } from '../components/ResenaForm';
 import { Paginacion } from '../components/Paginacion';
 import { Aviso } from '../components/Aviso';
+import { PanelAvisoLanzamiento } from '../components/PanelAvisoLanzamiento';
 
 export default function VideojuegoPagina() {
   const appId = Number(useParams().appId);
@@ -14,17 +15,28 @@ export default function VideojuegoPagina() {
   const [mia, setMia] = useState<Resena | null>(null);
   const [resenas, setResenas] = useState<Pagina<Resena> | null>(null);
   const [pagina, setPagina] = useState(1);
+  const [soloAmigos, setSoloAmigos] = useState(false);
+  // Cuántos amigos reseñaron este juego (para el botón del filtro)
+  const [deAmigos, setDeAmigos] = useState(0);
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
   const cargarJuego = useCallback(() => api.videojuego(appId).then(setJuego), [appId]);
-  const cargarResenas = useCallback(() => api.resenasDeJuego(appId, pagina).then(setResenas), [appId, pagina]);
+  const cargarResenas = useCallback(
+    () => api.resenasDeJuego(appId, pagina, soloAmigos).then(setResenas),
+    [appId, pagina, soloAmigos],
+  );
 
   useEffect(() => {
     setError(null);
     setPagina(1);
-    Promise.all([cargarJuego(), api.miResena(appId).then(setMia)]).catch((e) => setError(e.message));
+    setSoloAmigos(false);
+    Promise.all([
+      cargarJuego(),
+      api.miResena(appId).then(setMia),
+      api.resenasDeJuego(appId, 1, true).then((r) => setDeAmigos(r.total)),
+    ]).catch((e) => setError(e.message));
   }, [appId, cargarJuego]);
 
   useEffect(() => {
@@ -35,15 +47,15 @@ export default function VideojuegoPagina() {
     await Promise.all([cargarJuego(), cargarResenas(), api.miResena(appId).then(setMia)]);
   }
 
-  async function publicar(calificacion: number, comentario: string) {
-    await api.crearResena(appId, calificacion, comentario);
+  async function publicar(contenido: ContenidoResena) {
+    await api.crearResena(appId, contenido);
     setMensaje('¡Reseña publicada! Guardamos tus horas de juego de este momento.');
     await refrescarTodo();
   }
 
-  async function guardarEdicion(calificacion: number, comentario: string) {
+  async function guardarEdicion(contenido: ContenidoResena) {
     if (!mia) return;
-    await api.modificarResena(mia.resenaId, calificacion, comentario);
+    await api.modificarResena(mia.resenaId, contenido);
     setEditando(false);
     setMensaje('Reseña actualizada.');
     await refrescarTodo();
@@ -82,7 +94,7 @@ export default function VideojuegoPagina() {
                 </span>
               </>
             ) : (
-              <span className="texto-suave">Todavía no tiene reseñas</span>
+              !juego.proximamente && <span className="texto-suave">Todavía no tiene reseñas</span>
             )}
           </div>
           <p className="juego-descripcion">{juego.descripcion}</p>
@@ -104,48 +116,74 @@ export default function VideojuegoPagina() {
       {mensaje && <Aviso tipo="exito">{mensaje}</Aviso>}
       {error && <Aviso tipo="error">{error}</Aviso>}
 
-      <section className="panel">
-        <h2>Tu reseña</h2>
-        {mia && editando && (
-          <ResenaForm
-            inicial={mia}
-            textoBoton="Guardar cambios"
-            onEnviar={guardarEdicion}
-            onCancelar={() => setEditando(false)}
-          />
-        )}
-        {mia && !editando && (
-          <div className="fila-botones fila-izq">
-            <button className="btn btn-secundario" onClick={() => setEditando(true)}>
-              Editar
-            </button>
-            <button className="btn btn-peligro" onClick={() => void eliminar()}>
-              Eliminar
-            </button>
-          </div>
-        )}
-        {!mia && <ResenaForm textoBoton="Publicar reseña" onEnviar={publicar} />}
-      </section>
-
-      <section>
-        <h2>Reseñas de la comunidad</h2>
-        {resenas && resenas.items.length === 0 && <div className="vacio">Nadie reseñó este juego todavía. ¡Sé el primero!</div>}
-        <div className="lista-resenas">
-          {resenas?.items.map((r) => (
-            <ResenaCard
-              key={`${r.resenaId}-${r.fechaModificacion ?? ''}-${r.cantLike}`}
-              resena={r}
-              mostrar="usuario"
-              onEditar={() => {
-                setEditando(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              onEliminar={() => void eliminar()}
+      {juego.proximamente ? (
+        <PanelAvisoLanzamiento juego={juego} />
+      ) : (
+        <section className="panel">
+          <h2>Tu reseña</h2>
+          {mia && editando && (
+            <ResenaForm
+              inicial={mia}
+              textoBoton="Guardar cambios"
+              onEnviar={guardarEdicion}
+              onCancelar={() => setEditando(false)}
             />
-          ))}
-        </div>
-        {resenas && <Paginacion pagina={resenas.pagina} paginas={resenas.paginas} onCambiar={setPagina} />}
-      </section>
+          )}
+          {mia && !editando && (
+            <div className="fila-botones fila-izq">
+              <button className="btn btn-secundario" onClick={() => setEditando(true)}>
+                Editar
+              </button>
+              <button className="btn btn-peligro" onClick={() => void eliminar()}>
+                Eliminar
+              </button>
+            </div>
+          )}
+          {!mia && <ResenaForm textoBoton="Publicar reseña" onEnviar={publicar} />}
+        </section>
+      )}
+
+      {!juego.proximamente && (
+        <section>
+          <div className="calendario-cabecera">
+            <h2>Reseñas de la comunidad</h2>
+            {deAmigos > 0 && (
+              <div className="pestanias pestanias-chicas" role="tablist" aria-label="Filtrar reseñas">
+                {([false, true] as const).map((amigos) => (
+                  <button
+                    key={String(amigos)}
+                    role="tab"
+                    aria-selected={soloAmigos === amigos}
+                    className={soloAmigos === amigos ? 'activa' : ''}
+                    onClick={() => {
+                      setSoloAmigos(amigos);
+                      setPagina(1);
+                    }}
+                  >
+                    {amigos ? `De mis amigos (${deAmigos})` : 'Todas'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {resenas && resenas.items.length === 0 && <div className="vacio">Nadie reseñó este juego todavía. ¡Sé el primero!</div>}
+          <div className="lista-resenas">
+            {resenas?.items.map((r) => (
+              <ResenaCard
+                key={`${r.resenaId}-${r.fechaModificacion ?? ''}-${r.cantLike}`}
+                resena={r}
+                mostrar="usuario"
+                onEditar={() => {
+                  setEditando(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onEliminar={() => void eliminar()}
+              />
+            ))}
+          </div>
+          {resenas && <Paginacion pagina={resenas.pagina} paginas={resenas.paginas} onCambiar={setPagina} />}
+        </section>
+      )}
     </div>
   );
 }

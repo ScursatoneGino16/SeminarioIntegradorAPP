@@ -9,6 +9,10 @@ import PerfilPagina from './pages/Perfil';
 import BibliotecaPagina from './pages/Biblioteca';
 import Admin from './pages/Admin';
 import Configuracion from './pages/Configuracion';
+import Lanzamientos from './pages/Lanzamientos';
+import Amigos from './pages/Amigos';
+import Notificaciones from './pages/Notificaciones';
+import { Campanita } from './components/Campanita';
 
 // Menú de comandos de RPG: el ítem activo lleva la manito de Final Fantasy.
 const claseNav = ({ isActive }: { isActive: boolean }) =>
@@ -38,11 +42,17 @@ function Encabezado() {
     <header className="ventana sticky top-0 z-20 !rounded-none !border-x-0 !border-t-0">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <NavLink to="/" className="flex items-baseline gap-2 font-titulo text-3xl leading-none text-primary no-underline hover:text-primary">
-          Reseñas<span className="font-pixel text-sm text-accent">de Steam</span>
+          Steam<span className="text-accent">Vault</span>
         </NavLink>
         <nav className="flex flex-wrap gap-1">
           <ItemMenu to="/" end icono="espada">
             Catálogo
+          </ItemMenu>
+          <ItemMenu to="/lanzamientos" icono="calendario">
+            Lanzamientos
+          </ItemMenu>
+          <ItemMenu to="/amigos" icono="amigos">
+            Amigos
           </ItemMenu>
           <ItemMenu to="/biblioteca" icono="cofre">
             Biblioteca
@@ -57,6 +67,7 @@ function Encabezado() {
           )}
         </nav>
         <div className="ml-auto flex items-center gap-4">
+          <Campanita />
           <Avatar url={u.avatarUrl} nombre={u.nombreUsuario} tam={36} />
           <span className="hidden max-w-[16ch] truncate sm:inline">{u.nombreUsuario}</span>
         </div>
@@ -89,6 +100,9 @@ export default function App() {
           <Route path="/videojuegos/:appId" element={<Protegida><VideojuegoPagina /></Protegida>} />
           <Route path="/usuarios/:steamId" element={<Protegida><PerfilPagina /></Protegida>} />
           <Route path="/biblioteca" element={<Protegida><BibliotecaPagina /></Protegida>} />
+          <Route path="/lanzamientos" element={<Protegida><Lanzamientos /></Protegida>} />
+          <Route path="/amigos" element={<Protegida><Amigos /></Protegida>} />
+          <Route path="/notificaciones" element={<Protegida><Notificaciones /></Protegida>} />
           <Route path="/admin" element={<Protegida admin><Admin /></Protegida>} />
           <Route path="/configuracion" element={<Protegida><Configuracion /></Protegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,4 +1,4 @@
-// Modelo de datos basado en el DER del proyecto "Sistema de Reseñas".
+// Modelo de datos de SteamVault, basado en el DER del proyecto.
 // Los SteamID son enteros de 64 bits, por eso se guardan como texto.
 
 generator client {
@@ -20,10 +20,17 @@ model Usuario {
   ultimoAcceso      DateTime @default(now()) @map("ultimo_acceso")
   // Última vez que se leyeron nombre y avatar desde Steam
   perfilActualizadoEn DateTime? @map("perfil_actualizado_en")
+  // Horas jugadas en toda la cuenta de Steam (todos los juegos, no solo los del catálogo).
+  // Se actualiza al sincronizar la biblioteca; null si nunca se pudo leer.
+  horasTotalesSteam Float? @map("horas_totales_steam")
 
-  biblioteca   UsuarioXVideojuego[]
-  resenas      Resena[]
-  valoraciones ValoracionXResena[]
+  biblioteca    UsuarioXVideojuego[]
+  resenas       Resena[]
+  valoraciones  ValoracionXResena[]
+  suscripciones SuscripcionLanzamiento[]
+  solicitudesEnviadas  Amistad[] @relation("solicitante")
+  solicitudesRecibidas Amistad[] @relation("receptor")
+  notificaciones       Notificacion[]
 
   @@map("usuario")
 }
@@ -35,19 +42,32 @@ model Videojuego {
   imagenUrl   String? @map("imagen_url")
   // Popularidad en Steam (reseñas positivas + negativas según el dataset); ordena el catálogo
   votosSteam  Int     @default(0) @map("votos_steam")
+  // Próximos lanzamientos (tienda de Steam). La fecha es null si Steam no da un día exacto
+  // ("Q1 2027", "Próximamente"); en ese caso queda el texto original.
+  fechaLanzamiento      DateTime? @map("fecha_lanzamiento") @db.Date
+  fechaLanzamientoTexto String?   @map("fecha_lanzamiento_texto") @db.VarChar(60)
+  proximamente          Boolean   @default(false)
+  // Contenido sexual explícito según los votos de etiquetas del dataset: el juego no se muestra
+  // en ninguna parte de la app (no se borra, así la marca se puede revertir).
+  contenidoAdulto       Boolean   @default(false) @map("contenido_adulto")
 
   categorias  VideojuegoXCategoria[]
   etiquetas   VideojuegoXEtiqueta[]
   resenas     Resena[]
   propietarios UsuarioXVideojuego[]
+  suscripciones SuscripcionLanzamiento[]
 
   @@index([nombre])
+  @@index([proximamente, fechaLanzamiento])
+  @@index([contenidoAdulto])
   @@map("videojuego")
 }
 
 model Categoria {
   categoriaId Int    @id @default(autoincrement()) @map("categoria_id")
   nombre      String @unique @map("nombre_categoria") @db.VarChar(100)
+  // Categorías no aptas (violencia, desnudos...): no se listan ni se muestran en los juegos
+  oculta      Boolean @default(false)
 
   videojuegos VideojuegoXCategoria[]
 
@@ -57,6 +77,7 @@ model Categoria {
 model Etiqueta {
   etiquetaId Int    @id @default(autoincrement()) @map("etiqueta_id")
   nombre     String @unique @map("nombre_etiqueta") @db.VarChar(100)
+  oculta     Boolean @default(false)
 
   videojuegos VideojuegoXEtiqueta[]
 
@@ -115,6 +136,7 @@ model Resena {
   usuario      Usuario             @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
   videojuego   Videojuego          @relation(fields: [appId], references: [appId], onDelete: Cascade)
   valoraciones ValoracionXResena[]
+  adjuntos     AdjuntoResena[]
 
   // Una reseña por usuario y videojuego (RNF 8)
   @@unique([steamId, appId])
@@ -132,6 +154,70 @@ model ValoracionXResena {
 
   @@id([steamId, resenaId])
   @@map("valoracion_x_resena")
+}
+
+// GIF de Giphy o imagen subida que acompaña a una reseña (hasta 4, en el orden elegido).
+model AdjuntoResena {
+  adjuntoId Int    @id @default(autoincrement()) @map("adjunto_id")
+  resenaId  Int    @map("resena_id")
+  tipo      String @db.VarChar(10) // 'gif' | 'imagen' (CHECK en la migración)
+  url       String @db.VarChar(500)
+  orden     Int    @default(0)
+
+  resena Resena @relation(fields: [resenaId], references: [resenaId], onDelete: Cascade)
+
+  @@index([resenaId])
+  @@map("adjunto_resena")
+}
+
+// Aviso por mail 24 h antes del lanzamiento de un juego. El token permite darse de baja desde el mail.
+model SuscripcionLanzamiento {
+  suscripcionId Int       @id @default(autoincrement()) @map("suscripcion_id")
+  appId         Int       @map("app_id")
+  steamId       String    @map("steam_id") @db.VarChar(20)
+  email         String    @db.VarChar(254)
+  token         String    @unique @default(uuid()) @db.Uuid
+  fechaAlta     DateTime  @default(now()) @map("fecha_alta")
+  avisadoEn     DateTime? @map("avisado_en")
+
+  videojuego Videojuego @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  usuario    Usuario    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@unique([appId, email])
+  @@index([avisadoEn])
+  @@map("suscripcion_lanzamiento")
+}
+
+// Amistad dentro de SteamVault: una solicitud que el receptor acepta.
+// Los amigos de Steam solo se usan para sugerir a quién agregar.
+model Amistad {
+  solicitanteId  String    @map("solicitante_id") @db.VarChar(20)
+  receptorId     String    @map("receptor_id") @db.VarChar(20)
+  estado         String    @db.VarChar(10) // 'pendiente' | 'aceptada' (CHECK en la migración)
+  fechaAlta      DateTime  @default(now()) @map("fecha_alta")
+  fechaRespuesta DateTime? @map("fecha_respuesta")
+
+  solicitante Usuario @relation("solicitante", fields: [solicitanteId], references: [steamId], onDelete: Cascade)
+  receptor    Usuario @relation("receptor", fields: [receptorId], references: [steamId], onDelete: Cascade)
+
+  @@id([solicitanteId, receptorId])
+  @@index([receptorId, estado])
+  @@map("amistad")
+}
+
+// Notificación dentro de la app. `datos` depende del tipo (actor, reseña, juego...).
+model Notificacion {
+  notificacionId Int       @id @default(autoincrement()) @map("notificacion_id")
+  steamId        String    @map("steam_id") @db.VarChar(20) // destinatario
+  tipo           String    @db.VarChar(30)
+  datos          Json      @default("{}")
+  leidaEn        DateTime? @map("leida_en")
+  fechaCreacion  DateTime  @default(now()) @map("fecha_creacion")
+
+  usuario Usuario @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@index([steamId, leidaEn, fechaCreacion(sort: Desc)])
+  @@map("notificacion")
 }
 
 // Tabla de sesiones usada por connect-pg-simple (RNF 3).

@@ -209,6 +209,11 @@ export default function Catalogo() {
                 >
                   <div className="relative border-b-4 border-ring">
                     <Portada url={v.imagenUrl} nombre={v.nombre} />
+                    {v.proximamente && (
+                      <span className="absolute top-2 right-2 border-2 border-[#04040f] bg-accent px-1.5 py-1 font-pixel text-xs leading-none text-accent-foreground [text-shadow:none]">
+                        Próximamente
+                      </span>
+                    )}
                     {v.enBiblioteca && (
                       <span className="absolute top-2 left-2 border-2 border-[#04040f] bg-primary px-1.5 py-1 font-pixel text-xs leading-none text-primary-foreground [text-shadow:none]">
                         En tu biblioteca

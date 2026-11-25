@@ -1,4 +1,4 @@
-# Sistema de Reseñas — Tecnologías e implementación
+# SteamVault — Tecnologías e implementación
 
 Seminario Integrador · Grupo 08
 
@@ -21,6 +21,9 @@ La aplicación es una **SPA (Single Page Application)** en React que consume una
 | **Steam OpenID 2.0** | Autenticación | Es el mecanismo oficial de Steam. La app nunca ve ni guarda contraseñas: solo recibe el SteamID ya verificado (RNF 2). |
 | **Steam Web API** | Biblioteca, horas de juego y perfil | Es la única fuente oficial de la biblioteca y las horas jugadas de cada usuario. También aporta el nivel y la experiencia, la antigüedad de la cuenta y los ítems equipados del perfil (avatar animado, marco y fondo). Las llamadas tienen un tope de 5 s con `AbortSignal.timeout` (RNF 1). |
 | **stream-json** | Lectura del dataset del catálogo | El dataset de Steam pesa ~1 GB y no entra en memoria como texto. Este paquete lo lee de a partes, sin cargarlo entero. |
+| **Tienda de Steam** | Próximos lanzamientos | Aporta los próximos juegos populares y sus fechas sin necesidad de clave. Se consulta cada 6 h en segundo plano. |
+| **Giphy API** | GIFs en las reseñas | Buscador de GIFs gratuito. Se consulta desde el back para que la clave no llegue al navegador y se limita a contenido PG-13. |
+| **Nodemailer (SMTP)** | Avisos de lanzamiento por mail | Funciona con cualquier servidor SMTP; sin configuración los mails se muestran en la consola, así se puede probar sin cuenta de correo. |
 | **Swagger UI + OpenAPI 3.1** | Documentación de la API | Ofrece documentación navegable y la posibilidad de probar cada endpoint desde el navegador (`/api/docs`). |
 | **Vitest** | Pruebas unitarias | Es rápido, compatible con TypeScript sin configuración y con una sintaxis estándar (`describe` / `it` / `expect`). Mitiga el riesgo R-05 (cobertura de pruebas insuficiente). |
 
@@ -66,7 +69,8 @@ El sistema replica la **Vista Arquitectónica de Diseño Detallada**: cada compo
 
 ```
 ┌────────────────────── CapaPresentacionWeb (front/ · React) ───────────────────────┐
-│  Login · Catálogo · Videojuego · Perfil · Mi biblioteca · Administración           │
+│  Login · Catálogo · Videojuego · Perfil · Biblioteca · Lanzamientos                │
+│  Amigos · Notificaciones · Administración                                          │
 └──────────────────────────────────┬─────────────────────────────────────────────────┘
                                    │ HTTP/JSON  (/api, cookie de sesión)
 ┌──────────────────── CapaLogicaPersistente (back/src/modulos · Express) ───────────┐
@@ -74,6 +78,11 @@ El sistema replica la **Vista Arquitectónica de Diseño Detallada**: cada compo
 │  videojuego/  GestionVideojuego    Videojuego, Categoria, Etiqueta                 │
 │  catalogo/    GestionCatalogo      búsqueda, filtros, orden, importación           │
 │  resenas/     GestionPublicacionYGestionReseñas   Reseña, OrganizarReseña          │
+│  insignias/   Clasificaciones      rango de cuenta, insignias por juego            │
+│  amigos/      GestionAmigos        solicitudes, amistades, sugerencias             │
+│  notificaciones/ GestionNotificaciones   campanita                                 │
+│  lanzamientos/ GestionLanzamientos calendario, avisos por mail                     │
+│  adjuntos/    GIFs (Giphy) e imágenes de las reseñas                               │
 │                         │ Prisma                                                    │
 │                    PostgreSQL                                                       │
 └──────────────────────────────────┬─────────────────────────────────────────────────┘
@@ -81,6 +90,8 @@ El sistema replica la **Vista Arquitectónica de Diseño Detallada**: cada compo
 ┌────────────── CapaLogicaNoPersistente (back/src/importadores) ────────────────────┐
 │  importadorSteamOpenID   login y datos de la cuenta (DatosCuentaSteamID)           │
 │  importadorBiblioteca    biblioteca y horas (InformacionVideojuegosDeUsuario)      │
+│  importadorLanzamientos  próximos lanzamientos de la tienda de Steam               │
+│  importadorAmigosSteam   amigos de Steam (sugerencias de amistad)                  │
 │  steamHttp               tiempo máximo de 5 s y manejo de fallos de Steam          │
 └────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -93,11 +104,14 @@ El esquema de Prisma sigue el DER: `Usuario`, `Videojuego`, `Categoria`, `Etique
 
 - la tabla `session`, para las sesiones;
 - `videojuego.votos_steam`, la popularidad en Steam, para ordenar el catálogo;
-- `usuario.perfil_actualizado_en`, para refrescar nombre y avatar cada 6 horas.
+- `usuario.perfil_actualizado_en`, para refrescar nombre y avatar cada 6 horas;
+- `usuario.horas_totales_steam`, para el rango de cuenta;
+- en `videojuego`, la fecha de lanzamiento (`fecha_lanzamiento`, `fecha_lanzamiento_texto`, `proximamente`) y la marca `contenido_adulto`; en `categoria` y `etiqueta`, la marca `oculta`;
+- las tablas `AdjuntoResena` (GIFs e imágenes de las reseñas, hasta 4), `SuscripcionLanzamiento` (avisos por mail), `Amistad` y `Notificacion`.
 
 Los SteamID se guardan como texto porque son enteros de 64 bits. La regla "una reseña por usuario y juego" está garantizada por una clave única `(steam_id, app_id)`.
 
-El esquema evolucionó con tres migraciones versionadas: la inicial, la que eliminó las reacciones con emoji (quedaron fuera de alcance) y la de popularidad y perfil.
+El esquema evolucionó con seis migraciones versionadas: la inicial, la que eliminó las reacciones con emoji (quedaron fuera de alcance), la de popularidad y perfil, la de insignias, lanzamientos y adjuntos, la de amigos, notificaciones y horas totales, y la del ocultamiento de contenido no apto.
 
 ### Integración con Steam
 
@@ -116,16 +130,16 @@ El catálogo se carga desde el **Steam Games Dataset** (FronkonGames, licencia M
 ### Flujo de publicación de una reseña
 
 1. El front envía la calificación y el comentario. El back los valida con Zod.
-2. Se verifica que el juego exista y que el usuario no lo haya reseñado antes.
+2. Se verifica que el juego exista, que ya haya salido y que el usuario no lo haya reseñado antes.
 3. Se consulta la biblioteca en Steam (CU 6). Si es privada o el juego no está, se rechaza con un mensaje claro.
 4. Se guarda la reseña junto con las **horas jugadas en ese momento** (RNF 10).
 
 ### Calidad
 
-- **19 pruebas unitarias** (Vitest) sobre validaciones, cálculo de "Me gusta", filtros del catálogo, login de Steam, lectura del perfil, datos simulados del perfil de Steam y adaptación del dataset.
+- **38 pruebas unitarias** (Vitest) sobre validaciones, cálculo de "Me gusta", filtros del catálogo, login de Steam, lectura del perfil, datos simulados del perfil de Steam, adaptación del dataset, clasificaciones (rango e insignias), amigos, fechas de lanzamiento, adjuntos y contenido no apto.
 - Verificación de tipos en back y front (`tsc`).
 - Pruebas de punta a punta de la API y la interfaz durante el desarrollo, incluida la autorización: un usuario no puede editar ni borrar reseñas ajenas.
-- Documentación de los 29 endpoints con Swagger en `/api/docs`.
+- Documentación de los 44 endpoints con Swagger en `/api/docs`.
 
 ---
 

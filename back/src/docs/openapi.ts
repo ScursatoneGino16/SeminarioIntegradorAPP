@@ -6,6 +6,7 @@ import { devLoginSchema } from '../modulos/usuario/usuario.routes.js';
 import { nombreSchema, videojuegoSchema, videojuegoUpdateSchema } from '../modulos/videojuego/videojuego.service.js';
 import { datasetSchema } from '../modulos/catalogo/catalogo.service.js';
 import { modificarResenaSchema, registrarResenaSchema, valoracionSchema } from '../modulos/resenas/resena.service.js';
+import { suscripcionSchema } from '../modulos/lanzamientos/lanzamientos.service.js';
 
 const esquema = (s: z.ZodType) => {
   const { $schema: _omitido, ...resto } = z.toJSONSchema(s, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>;
@@ -50,12 +51,12 @@ const query = (name: string, descripcion: string, schema: object = { type: 'stri
 export const documentoOpenApi = {
   openapi: '3.1.0',
   info: {
-    title: 'Sistema de Reseñas de Videojuegos de Steam — API',
+    title: 'SteamVault — API',
     version: '0.2.0',
     description: [
-      'API del Seminario Integrador (Grupo 08).',
+      'API de SteamVault, Seminario Integrador (Grupo 08).',
       '',
-      '**Autenticación:** sesión por cookie (`resenas.sid`) obtenida con Steam OpenID (`GET /api/auth/steam`) o, en modo simulado, con `POST /api/auth/dev-login`.',
+      '**Autenticación:** sesión por cookie (`steamvault.sid`) obtenida con Steam OpenID (`GET /api/auth/steam`) o, en modo simulado, con `POST /api/auth/dev-login`.',
       'Como Swagger UI se sirve desde el mismo origen, después de iniciar sesión en la app (o ejecutar *dev-login* acá) los "Try it out" ya envían la cookie.',
       '',
       'La sesión expira luego de 30 minutos sin actividad (RNF 3).',
@@ -70,11 +71,15 @@ export const documentoOpenApi = {
     { name: 'Categorías', description: 'GestionVideojuego · Categoria' },
     { name: 'Etiquetas', description: 'GestionVideojuego · Etiqueta' },
     { name: 'Reseñas', description: 'GestionPublicacionYGestionReseñas' },
+    { name: 'Adjuntos', description: 'GIFs de Giphy e imágenes para las reseñas' },
+    { name: 'Lanzamientos', description: 'GestionLanzamientos · calendario de próximos lanzamientos y avisos por mail' },
+    { name: 'Amigos', description: 'GestionAmigos · solicitudes de amistad y sugerencias desde Steam' },
+    { name: 'Notificaciones', description: 'GestionNotificaciones · avisos dentro de la app (campanita)' },
   ],
   security: [{ cookieSesion: [] }],
   components: {
     securitySchemes: {
-      cookieSesion: { type: 'apiKey', in: 'cookie', name: 'resenas.sid' },
+      cookieSesion: { type: 'apiKey', in: 'cookie', name: 'steamvault.sid' },
     },
     schemas: {
       Error: {
@@ -83,7 +88,19 @@ export const documentoOpenApi = {
           error: { type: 'string', example: 'Solo podés modificar o eliminar tus propias reseñas' },
           codigo: {
             type: 'string',
-            enum: ['NO_AUTENTICADO', 'PROHIBIDO', 'NO_ENCONTRADO', 'CONFLICTO', 'VALIDACION', 'SOLICITUD_INVALIDA', 'STEAM_NO_DISPONIBLE', 'INTERNO'],
+            enum: [
+              'NO_AUTENTICADO',
+              'PROHIBIDO',
+              'NO_ENCONTRADO',
+              'CONFLICTO',
+              'VALIDACION',
+              'SOLICITUD_INVALIDA',
+              'DEMASIADO_GRANDE',
+              'STEAM_NO_DISPONIBLE',
+              'GIFS_NO_CONFIGURADOS',
+              'GIPHY_NO_DISPONIBLE',
+              'INTERNO',
+            ],
           },
           detalles: {
             type: 'array',
@@ -110,6 +127,8 @@ export const documentoOpenApi = {
           usuario: { oneOf: [ref('Usuario'), { type: 'null' }] },
           modoSimulado: { type: 'boolean', description: 'true si la biblioteca de Steam se simula (sin STEAM_API_KEY)' },
           minutosInactividad: { type: 'integer', example: 30 },
+          gifsHabilitados: { type: 'boolean', description: 'true si el servidor tiene GIPHY_API_KEY' },
+          maxMbImagen: { type: 'integer', description: 'Tamaño máximo de las imágenes subidas (MB)', example: 3 },
         },
       },
       Perfil: {
@@ -121,6 +140,32 @@ export const documentoOpenApi = {
           bibliotecaPublica: { type: 'boolean' },
           fechaAlta: { type: 'string', format: 'date-time' },
           _count: { type: 'object', properties: { resenas: { type: 'integer' } } },
+          relacion: ref('Relacion'),
+          cantidadAmigos: { type: 'integer' },
+        },
+      },
+      Relacion: {
+        type: 'string',
+        enum: ['propio', 'ninguna', 'enviada', 'recibida', 'amigos'],
+        description: 'Relación de quien consulta con ese usuario: `enviada` = le mandé una solicitud, `recibida` = me la mandó',
+      },
+      UsuarioPublico: {
+        type: 'object',
+        properties: { steamId: { type: 'string' }, nombreUsuario: { type: 'string' }, avatarUrl: { type: ['string', 'null'] } },
+      },
+      Notificacion: {
+        type: 'object',
+        properties: {
+          notificacionId: { type: 'integer' },
+          tipo: { type: 'string', enum: ['solicitud_amistad', 'amistad_aceptada', 'like_resena', 'resena_de_amigo', 'lanzamiento'] },
+          datos: {
+            type: 'object',
+            description:
+              'Depende del tipo: `actorId` (amistad, reseña de amigo), `actorIds` (likes agrupados), `resenaId`, `appId`, `juego`, `fecha` (lanzamiento)',
+          },
+          leida: { type: 'boolean' },
+          fechaCreacion: { type: 'string', format: 'date-time' },
+          actores: { type: 'array', items: ref('UsuarioPublico'), description: 'Quienes la generaron, con nombre y avatar actuales' },
         },
       },
       Biblioteca: {
@@ -214,6 +259,9 @@ export const documentoOpenApi = {
           enBiblioteca: { type: 'boolean', description: 'Solo en el catálogo: está en tu biblioteca de Steam' },
           horasJugadas: { type: ['number', 'null'], description: 'Solo en el catálogo: tus horas en ese juego' },
           promedioCalificacion: { type: ['number', 'null'], description: 'Solo en GET /api/videojuegos/{appId}' },
+          proximamente: { type: 'boolean', description: 'true mientras el juego no salió en Steam (reseñas bloqueadas)' },
+          fechaLanzamiento: { type: ['string', 'null'], format: 'date-time', description: 'Día de salida (medianoche UTC) si Steam da un día exacto' },
+          fechaLanzamientoTexto: { type: ['string', 'null'], description: 'Fecha tal como la muestra Steam ("Q1 2027", "Oct 22, 2026")', example: 'Oct 22, 2026' },
         },
       },
       Resena: {
@@ -239,6 +287,105 @@ export const documentoOpenApi = {
           },
           esPropia: { type: 'boolean' },
           miValoracion: { type: ['boolean', 'null'], description: 'true = Me gusta, false = No me gusta, null = sin valorar' },
+          adjuntos: { type: 'array', items: ref('Adjunto') },
+          insignia: {
+            description: 'Insignia del autor en este juego según sus horas actuales (o las del momento de reseñar).',
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  rango: ref('Rango'),
+                  titulo: { type: 'string', example: 'Veterano' },
+                  nivel: { type: 'integer', description: 'Posición del escalón (0 = I)' },
+                  horas: { type: 'number' },
+                },
+              },
+              { type: 'null' },
+            ],
+          },
+        },
+      },
+      Adjunto: {
+        type: 'object',
+        properties: {
+          tipo: { type: 'string', enum: ['gif', 'imagen'] },
+          url: { type: 'string', description: 'GIF: URL https de media.giphy.com. Imagen: ruta devuelta por POST /api/imagenes', example: '/api/uploads/3f1c….png' },
+        },
+      },
+      Rango: {
+        type: 'string',
+        enum: [
+          'recien-llegado',
+          'explorador',
+          'combatiente',
+          'veterano',
+          'experto',
+          'maestro',
+          'campeon',
+          'leyenda',
+          'heroe-de-leyenda',
+          'trascendente',
+        ],
+        description: 'Clasificación por horas en un juego (escalones en back/src/modulos/insignias/clasificaciones.ts)',
+      },
+      Insignias: {
+        type: 'object',
+        properties: {
+          bibliotecaPublica: { type: 'boolean', description: 'Con la biblioteca privada no hay rango ni insignias' },
+          rangoCuenta: {
+            description: 'Clasificación por horas totales de Steam (todos los juegos de la cuenta). null si no se conocen.',
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', example: 'guerrero' },
+                  titulo: { type: 'string', example: 'Guerrero' },
+                  desde: { type: 'number', description: 'Horas donde empieza este rango' },
+                  nivel: { type: 'integer', description: 'Posición del rango (0 = el primero)' },
+                  horas: { type: 'number', description: 'Horas totales del jugador' },
+                  siguiente: {
+                    oneOf: [{ type: 'object', properties: { id: { type: 'string' }, titulo: { type: 'string' }, desde: { type: 'number' } } }, { type: 'null' }],
+                  },
+                },
+              },
+              { type: 'null' },
+            ],
+          },
+          insignias: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                appId: { type: 'integer' },
+                nombre: { type: 'string' },
+                imagenUrl: { type: ['string', 'null'] },
+                horas: { type: 'number' },
+                rango: ref('Rango'),
+                titulo: { type: 'string' },
+                nivel: { type: 'integer', description: 'Posición del escalón (0 = I)' },
+                desde: { type: 'number' },
+              },
+            },
+          },
+        },
+      },
+      Lanzamiento: {
+        type: 'object',
+        properties: {
+          appId: { type: 'integer' },
+          nombre: { type: 'string' },
+          imagenUrl: { type: ['string', 'null'] },
+          fechaLanzamiento: { type: ['string', 'null'], format: 'date-time' },
+          fechaLanzamientoTexto: { type: ['string', 'null'] },
+          conAviso: { type: 'boolean', description: 'El usuario pidió el aviso por mail' },
+        },
+      },
+      AvisoLanzamiento: {
+        type: 'object',
+        properties: {
+          email: { type: 'string', format: 'email' },
+          fechaAlta: { type: 'string', format: 'date-time' },
+          avisadoEn: { type: ['string', 'null'], format: 'date-time', description: 'Cuándo se envió el mail (null si todavía no)' },
         },
       },
       ResultadoImportacion: {
@@ -259,6 +406,7 @@ export const documentoOpenApi = {
       ResenaNueva: esquema(registrarResenaSchema),
       ResenaModificada: esquema(modificarResenaSchema),
       Valoracion: esquema(valoracionSchema),
+      Suscripcion: esquema(suscripcionSchema),
     },
   },
   paths: {
@@ -327,6 +475,16 @@ export const documentoOpenApi = {
           ...errores,
           404: error('Usuario no encontrado'),
         },
+      },
+    },
+    '/api/usuarios/{steamId}/insignias': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Clasificaciones del jugador',
+        description:
+          'Las dos clasificaciones: el rango de cuenta (horas totales de Steam) y una insignia por juego (horas en ese juego). Se calculan con la última biblioteca guardada.',
+        parameters: [pathParam('steamId', 'SteamID de 64 bits', 'string')],
+        responses: { 200: ok('Insignias', ref('Insignias')), ...errores, 404: error('Usuario no encontrado') },
       },
     },
     '/api/usuarios/{steamId}': {
@@ -407,10 +565,12 @@ export const documentoOpenApi = {
       get: {
         tags: ['Reseñas'],
         summary: 'Listar reseñas de un videojuego o de un usuario (CU 8, 12)',
-        description: 'Indicar `appId` **o** `steamId`. Por videojuego se ordenan por cantidad de "Me gusta" (descendente); por usuario, por fecha.',
+        description:
+          'Indicar `appId` **o** `steamId`. Por videojuego se ordenan por cantidad de "Me gusta" (descendente); por usuario, por fecha. Con `deAmigos=true` solo vuelven reseñas de tus amigos: de un juego (con `appId`) o de todos los juegos, como actividad reciente (sin `appId`).',
         parameters: [
           query('appId', 'AppID del videojuego', { type: 'integer' }),
           query('steamId', 'SteamID del autor'),
+          query('deAmigos', 'Solo reseñas de mis amigos', { type: 'string', enum: ['true', 'false'] }),
           query('pagina', 'Número de página', { type: 'integer', default: 1 }),
           query('tamanio', 'Resultados por página', { type: 'integer', maximum: 50, default: 10 }),
         ],
@@ -420,13 +580,13 @@ export const documentoOpenApi = {
         tags: ['Reseñas'],
         summary: 'Registrar reseña (CU 7)',
         description:
-          'Consulta la biblioteca en Steam (CU 6) y guarda las horas jugadas en ese momento. Requiere que el juego esté en la biblioteca y que sea pública.',
+          'Consulta la biblioteca en Steam (CU 6) y guarda las horas jugadas en ese momento. Requiere que el juego esté en la biblioteca y que sea pública, y que el juego ya haya salido. Admite hasta 4 adjuntos (GIF de Giphy o imagen subida con POST /api/imagenes).',
         requestBody: cuerpo('ResenaNueva'),
         responses: {
           201: ok('Publicada', ref('Resena')),
           400: error('Datos inválidos (1 a 5 estrellas, hasta 1200 caracteres)'),
           ...errores,
-          403: error('Biblioteca privada o juego fuera de la biblioteca'),
+          403: error('Biblioteca privada, juego fuera de la biblioteca o que todavía no salió'),
           404: error('El videojuego no existe'),
           409: error('Ya existe una reseña del usuario para ese juego'),
           503: error('Steam no respondió y no hay datos guardados'),
@@ -451,7 +611,7 @@ export const documentoOpenApi = {
       put: {
         tags: ['Reseñas'],
         summary: 'Modificar reseña propia (CU 9)',
-        description: 'Las horas al comentar no cambian (conservan el valor histórico).',
+        description: 'Las horas al comentar no cambian (conservan el valor histórico). `adjuntos` reemplaza los anteriores (si se omite, se quitan).',
         requestBody: cuerpo('ResenaModificada'),
         responses: { 200: ok('Modificada', ref('Resena')), ...errores, 403: error('La reseña es de otro usuario'), 404: error('No existe') },
       },
@@ -481,6 +641,262 @@ export const documentoOpenApi = {
           403: error('Es una reseña propia'),
           404: error('No existe'),
         },
+      },
+    },
+
+    // ---------------- Amigos ----------------
+    '/api/amigos': {
+      get: {
+        tags: ['Amigos'],
+        summary: 'Mis amigos',
+        responses: {
+          200: ok('Amigos', {
+            type: 'array',
+            items: { allOf: [ref('UsuarioPublico'), { type: 'object', properties: { amigosDesde: { type: 'string', format: 'date-time' } } }] },
+          }),
+          ...errores,
+        },
+      },
+    },
+    '/api/amigos/solicitudes': {
+      get: {
+        tags: ['Amigos'],
+        summary: 'Solicitudes pendientes (recibidas y enviadas)',
+        responses: {
+          200: ok('Solicitudes', {
+            type: 'object',
+            properties: {
+              recibidas: { type: 'array', items: ref('UsuarioPublico') },
+              enviadas: { type: 'array', items: ref('UsuarioPublico') },
+            },
+          }),
+          ...errores,
+        },
+      },
+    },
+    '/api/amigos/sugerencias': {
+      get: {
+        tags: ['Amigos'],
+        summary: 'Sugerencias: amigos de Steam que usan SteamVault',
+        description:
+          'Lee la lista de amigos de Steam (`GetFriendList`, máx. 5 s, en memoria 30 min) y devuelve los que ya están registrados y con los que no hay amistad ni solicitud. En modo simulado los "amigos de Steam" salen de los usuarios registrados.',
+        responses: {
+          200: ok('Sugerencias', {
+            type: 'object',
+            properties: {
+              steamDisponible: { type: 'boolean', description: 'false si Steam no respondió' },
+              listaPublica: { type: ['boolean', 'null'], description: 'false si la lista de amigos de Steam es privada' },
+              usuarios: { type: 'array', items: ref('UsuarioPublico') },
+            },
+          }),
+          ...errores,
+        },
+      },
+    },
+    '/api/amigos/{steamId}': {
+      parameters: [pathParam('steamId', 'SteamID del otro usuario', 'string')],
+      post: {
+        tags: ['Amigos'],
+        summary: 'Enviar solicitud de amistad',
+        description: 'Si el otro usuario ya me había enviado una solicitud, se acepta directamente. Notifica al receptor.',
+        responses: {
+          201: ok('Relación resultante', { type: 'object', properties: { relacion: ref('Relacion') } }),
+          ...errores,
+          400: error('No podés agregarte a vos mismo'),
+          404: error('Usuario no encontrado'),
+          409: error('Ya son amigos o ya enviaste la solicitud'),
+        },
+      },
+      delete: {
+        tags: ['Amigos'],
+        summary: 'Rechazar, cancelar o eliminar amistad',
+        responses: {
+          200: ok('Relación resultante', { type: 'object', properties: { relacion: ref('Relacion') } }),
+          ...errores,
+          404: error('No hay amistad ni solicitud'),
+        },
+      },
+    },
+    '/api/amigos/{steamId}/aceptar': {
+      put: {
+        tags: ['Amigos'],
+        summary: 'Aceptar una solicitud recibida',
+        description: 'Solo el receptor puede aceptarla (RNF 9). Notifica al solicitante.',
+        parameters: [pathParam('steamId', 'SteamID de quien envió la solicitud', 'string')],
+        responses: {
+          200: ok('Ahora son amigos', { type: 'object', properties: { relacion: ref('Relacion') } }),
+          ...errores,
+          404: error('No hay una solicitud pendiente de ese usuario'),
+        },
+      },
+    },
+
+    // ---------------- Notificaciones ----------------
+    '/api/notificaciones': {
+      get: {
+        tags: ['Notificaciones'],
+        summary: 'Mis notificaciones (más recientes primero)',
+        parameters: [
+          query('pagina', 'Número de página', { type: 'integer', default: 1 }),
+          query('tamanio', 'Resultados por página', { type: 'integer', maximum: 50, default: 20 }),
+        ],
+        responses: {
+          200: ok('Página de notificaciones', { allOf: [pagina('Notificacion'), { type: 'object', properties: { sinLeer: { type: 'integer' } } }] }),
+          ...errores,
+        },
+      },
+    },
+    '/api/notificaciones/cantidad': {
+      get: {
+        tags: ['Notificaciones'],
+        summary: 'Cantidad sin leer (contador de la campanita)',
+        description:
+          'El front lo consulta cada 30 s solo si hubo actividad del usuario en el último minuto: como cada request renueva la sesión, consultar sin parar evitaría que venza por inactividad (RNF 3).',
+        responses: { 200: ok('Cantidad', { type: 'object', properties: { sinLeer: { type: 'integer' } } }), ...errores },
+      },
+    },
+    '/api/notificaciones/leidas': {
+      put: {
+        tags: ['Notificaciones'],
+        summary: 'Marcar todas como leídas',
+        responses: { 200: ok('Marcadas', { type: 'object', properties: { marcadas: { type: 'integer' } } }), ...errores },
+      },
+    },
+    '/api/notificaciones/{id}/leida': {
+      put: {
+        tags: ['Notificaciones'],
+        summary: 'Marcar una como leída',
+        parameters: [pathParam('id', 'ID de la notificación')],
+        responses: { 204: ok('Marcada'), ...errores, 404: error('No existe o es de otro usuario') },
+      },
+    },
+
+    // ---------------- Adjuntos ----------------
+    '/api/imagenes': {
+      post: {
+        tags: ['Adjuntos'],
+        summary: 'Subir una imagen para una reseña',
+        description:
+          'El cuerpo es el archivo tal cual, con `Content-Type: image/*` (máx. `MAX_MB_IMAGEN`, 3 MB por defecto). El tipo real se verifica por sus bytes: solo PNG, JPG, GIF o WEBP. Devuelve la URL para usar como adjunto `imagen`.',
+        requestBody: {
+          required: true,
+          content: { 'image/png': { schema: { type: 'string', format: 'binary' } }, 'image/jpeg': { schema: { type: 'string', format: 'binary' } } },
+        },
+        responses: {
+          201: ok('Imagen guardada', { type: 'object', properties: { url: { type: 'string', example: '/api/uploads/3f1c….png' } } }),
+          ...errores,
+          400: error('Formato no soportado'),
+          413: error('El archivo es demasiado grande'),
+        },
+      },
+    },
+    '/api/gifs': {
+      get: {
+        tags: ['Adjuntos'],
+        summary: 'Buscar GIFs en Giphy',
+        description: 'Sin `q` devuelve los GIFs del momento. La clave de Giphy queda en el servidor (`GIPHY_API_KEY`).',
+        parameters: [
+          query('q', 'Texto a buscar (máx. 50 caracteres)'),
+          query('offset', 'Desde qué resultado', { type: 'integer', minimum: 0, default: 0 }),
+        ],
+        responses: {
+          200: ok('GIFs', {
+            type: 'object',
+            properties: {
+              total: { type: 'integer' },
+              siguienteOffset: { type: 'integer' },
+              gifs: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    titulo: { type: 'string' },
+                    url: { type: 'string', description: 'Usar como adjunto `gif`' },
+                    vistaPrevia: { type: 'string' },
+                  },
+                },
+              },
+            },
+          }),
+          ...errores,
+          503: error('Giphy no está configurado o no responde'),
+        },
+      },
+    },
+
+    // ---------------- Lanzamientos ----------------
+    '/api/lanzamientos': {
+      get: {
+        tags: ['Lanzamientos'],
+        summary: 'Calendario de próximos lanzamientos',
+        description: 'Juegos con fecha de salida dentro del mes indicado, y los que Steam todavía no tiene con un día exacto.',
+        parameters: [query('mes', 'Mes en formato AAAA-MM (por defecto, el actual)', { type: 'string', example: '2026-11' })],
+        responses: {
+          200: ok('Lanzamientos', {
+            type: 'object',
+            properties: {
+              mes: { type: 'string' },
+              juegos: { type: 'array', items: ref('Lanzamiento') },
+              sinFechaExacta: { type: 'array', items: ref('Lanzamiento') },
+            },
+          }),
+          ...errores,
+        },
+      },
+    },
+    '/api/lanzamientos/actualizar': {
+      post: {
+        tags: ['Lanzamientos'],
+        summary: 'Actualizar lanzamientos desde la tienda de Steam (admin)',
+        description: 'Lo mismo que hace el servidor cada `LANZAMIENTOS_HORAS`. Agrega al catálogo los juegos nuevos y actualiza las fechas. Tarda unos segundos por juego consultado.',
+        responses: {
+          200: ok('Resultado', {
+            type: 'object',
+            properties: {
+              consultados: { type: 'integer' },
+              proximos: { type: 'integer' },
+              agregadosAlCatalogo: { type: 'integer' },
+              yaSalieron: { type: 'integer' },
+            },
+          }),
+          ...erroresAdmin,
+        },
+      },
+    },
+    '/api/lanzamientos/{appId}/aviso': {
+      parameters: [pathParam('appId', 'AppID del videojuego')],
+      get: {
+        tags: ['Lanzamientos'],
+        summary: 'Mi aviso de lanzamiento',
+        responses: { 200: ok('El aviso o null', { oneOf: [ref('AvisoLanzamiento'), { type: 'null' }] }), ...errores },
+      },
+      put: {
+        tags: ['Lanzamientos'],
+        summary: 'Pedir aviso por mail 24 h antes del lanzamiento',
+        description: 'Uno por usuario y juego: si ya había uno, se reemplaza el mail. El mail incluye un enlace para darse de baja.',
+        requestBody: cuerpo('Suscripcion'),
+        responses: {
+          200: ok('Aviso registrado', ref('AvisoLanzamiento')),
+          ...errores,
+          404: error('No existe el videojuego'),
+          409: error('El juego ya salió'),
+        },
+      },
+      delete: {
+        tags: ['Lanzamientos'],
+        summary: 'Cancelar mi aviso',
+        responses: { 204: ok('Cancelado'), ...errores },
+      },
+    },
+    '/api/lanzamientos/baja/{token}': {
+      get: {
+        tags: ['Lanzamientos'],
+        summary: 'Darse de baja desde el enlace del mail',
+        description: 'No requiere sesión: el token del mail identifica el aviso. Responde una página HTML.',
+        security: [],
+        parameters: [pathParam('token', 'Token (UUID) incluido en el mail', 'string')],
+        responses: { 200: { description: 'Baja confirmada (HTML)' }, 404: { description: 'Enlace inválido o ya usado (HTML)' } },
       },
     },
   },

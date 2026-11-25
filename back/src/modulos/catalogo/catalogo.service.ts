@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../db.js';
 import { aplanar, incluirClasificacion } from '../videojuego/videojuego.service.js';
+import { estaPorSalir } from '../lanzamientos/proximamente.js';
+import { CATEGORIAS_OCULTAS, ETIQUETAS_OCULTAS, juegoVisible } from './contenidoNoApto.js';
 
 const listaIds = z
   .string()
@@ -26,19 +28,19 @@ export type FiltrosCatalogo = z.infer<typeof filtrosCatalogoSchema>;
 
 /** Construye el WHERE: búsqueda por nombre o AppID; las categorías/etiquetas elegidas deben cumplirse todas. */
 export function construirFiltro(f: Pick<FiltrosCatalogo, 'q' | 'categorias' | 'etiquetas'>): Prisma.VideojuegoWhereInput {
-  const and: Prisma.VideojuegoWhereInput[] = [];
+  const and: Prisma.VideojuegoWhereInput[] = [juegoVisible];
   if (f.q) {
     const porNombre: Prisma.VideojuegoWhereInput = { nombre: { contains: f.q, mode: 'insensitive' } };
     and.push(/^\d+$/.test(f.q) ? { OR: [porNombre, { appId: Number(f.q) }] } : porNombre);
   }
   for (const categoriaId of f.categorias) and.push({ categorias: { some: { categoriaId } } });
   for (const etiquetaId of f.etiquetas) and.push({ etiquetas: { some: { etiquetaId } } });
-  return and.length ? { AND: and } : {};
+  return { AND: and };
 }
 
 /** Mismo filtro que construirFiltro, en SQL, para la consulta ordenada por relevancia. */
 function filtroSql(f: Pick<FiltrosCatalogo, 'q' | 'categorias' | 'etiquetas'>): Prisma.Sql {
-  const condiciones: Prisma.Sql[] = [];
+  const condiciones: Prisma.Sql[] = [Prisma.sql`v.contenido_adulto = false`];
   if (f.q) {
     const patron = `%${f.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
     const porNombre = Prisma.sql`v.nombre_videojuego ILIKE ${patron}`;
@@ -48,7 +50,7 @@ function filtroSql(f: Pick<FiltrosCatalogo, 'q' | 'categorias' | 'etiquetas'>): 
     condiciones.push(Prisma.sql`EXISTS (SELECT 1 FROM videojuego_x_categoria c WHERE c.app_id = v.app_id AND c.categoria_id = ${id})`);
   for (const id of f.etiquetas)
     condiciones.push(Prisma.sql`EXISTS (SELECT 1 FROM videojuego_x_etiqueta e WHERE e.app_id = v.app_id AND e.etiqueta_id = ${id})`);
-  return condiciones.length ? Prisma.sql`WHERE ${Prisma.join(condiciones, ' AND ')}` : Prisma.empty;
+  return Prisma.sql`WHERE ${Prisma.join(condiciones, ' AND ')}`;
 }
 
 /**
@@ -112,6 +114,7 @@ export async function consultarCatalogo(f: FiltrosCatalogo, visor: string) {
     paginas: Math.max(1, Math.ceil(total / f.tamanio)),
     items: items.map(({ _count, ...v }) => ({
       ...aplanar(v),
+      proximamente: estaPorSalir(v),
       cantidadResenas: _count.resenas,
       enBiblioteca: enBiblioteca.has(v.appId),
       horasJugadas: enBiblioteca.get(v.appId) ?? null,
@@ -130,6 +133,8 @@ export const itemDatasetSchema = z.object({
   etiquetas: z.array(z.string().trim().min(1).max(100)).default([]),
   /** Popularidad en Steam (opcional; si no viene se conserva el valor guardado). */
   votosSteam: z.number().int().min(0).optional(),
+  /** Contenido sexual explícito (opcional; si no viene se conserva el valor guardado). */
+  contenidoAdulto: z.boolean().optional(),
 });
 export const datasetSchema = z.array(itemDatasetSchema);
 export type ItemDataset = z.infer<typeof itemDatasetSchema>;
@@ -165,13 +170,19 @@ export async function importarCatalogo(
   async function asegurarCategorias(nombres: string[]) {
     const faltan = nombres.filter((n) => !idCategoria.has(n));
     if (!faltan.length) return;
-    await prisma.categoria.createMany({ data: faltan.map((nombre) => ({ nombre })), skipDuplicates: true });
+    await prisma.categoria.createMany({
+      data: faltan.map((nombre) => ({ nombre, oculta: CATEGORIAS_OCULTAS.has(nombre) })),
+      skipDuplicates: true,
+    });
     for (const c of await prisma.categoria.findMany({ where: { nombre: { in: faltan } } })) idCategoria.set(c.nombre, c.categoriaId);
   }
   async function asegurarEtiquetas(nombres: string[]) {
     const faltan = nombres.filter((n) => !idEtiqueta.has(n));
     if (!faltan.length) return;
-    await prisma.etiqueta.createMany({ data: faltan.map((nombre) => ({ nombre })), skipDuplicates: true });
+    await prisma.etiqueta.createMany({
+      data: faltan.map((nombre) => ({ nombre, oculta: ETIQUETAS_OCULTAS.has(nombre) })),
+      skipDuplicates: true,
+    });
     for (const e of await prisma.etiqueta.findMany({ where: { nombre: { in: faltan } } })) idEtiqueta.set(e.nombre, e.etiquetaId);
   }
 
@@ -207,6 +218,10 @@ export async function importarCatalogo(
           UPDATE videojuego v SET votos_steam = t.votos
           FROM unnest(${appIds}::int[], ${lote.map((i) => i.votosSteam ?? null)}::int[]) AS t(app_id, votos)
           WHERE v.app_id = t.app_id AND t.votos IS NOT NULL`,
+        prisma.$executeRaw`
+          UPDATE videojuego v SET contenido_adulto = t.adulto
+          FROM unnest(${appIds}::int[], ${lote.map((i) => i.contenidoAdulto ?? null)}::boolean[]) AS t(app_id, adulto)
+          WHERE v.app_id = t.app_id AND t.adulto IS NOT NULL`,
         prisma.videojuegoXCategoria.deleteMany({ where: { appId: { in: appIds } } }),
         prisma.videojuegoXCategoria.createMany({
           data: lote.flatMap((i) => i.categorias.map((n) => ({ appId: i.appId, categoriaId: idCategoria.get(n)! }))),

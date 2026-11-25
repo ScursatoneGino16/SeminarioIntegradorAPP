@@ -6,6 +6,8 @@ import { obtenerDatosCuenta, type DatosCuentaSteam } from '../../importadores/im
 import { obtenerPerfilSteam, type PerfilSteam } from '../../importadores/importadorPerfilSteam.js';
 import { obtenerBiblioteca } from '../../importadores/importadorBiblioteca.js';
 import { SteamNoDisponibleError } from '../../importadores/steamHttp.js';
+import { cantidadAmigos, relacionCon } from '../amigos/amigos.service.js';
+import { juegoVisible } from '../catalogo/contenidoNoApto.js';
 
 /** Alta o actualización del usuario al iniciar sesión. */
 export async function registrarIngreso(datos: DatosCuentaSteam) {
@@ -64,8 +66,8 @@ export async function obtenerUsuario(steamId: string) {
   return usuario;
 }
 
-/** Perfil público: datos del usuario + historial de reseñas (CU 12). */
-export async function obtenerPerfil(steamId: string) {
+/** Perfil público: datos del usuario, amigos y relación con quien lo mira (CU 12). */
+export async function obtenerPerfil(steamId: string, visor: string) {
   const usuario = await prisma.usuario.findUnique({
     where: { steamId },
     select: {
@@ -78,7 +80,8 @@ export async function obtenerPerfil(steamId: string) {
     },
   });
   if (!usuario) throw noEncontrado('Usuario no encontrado');
-  return usuario;
+  const [relacion, amigos] = await Promise.all([relacionCon(visor, steamId), cantidadAmigos(steamId)]);
+  return { ...usuario, relacion, cantidadAmigos: amigos };
 }
 
 const MINUTOS_CACHE_PERFIL_STEAM = 30;
@@ -89,10 +92,13 @@ const cachePerfilSteam = new Map<string, { datos: PerfilSteam; vence: number }>(
  * Se guardan en memoria 30 minutos para no consultar a Steam en cada visita (RNF 1).
  */
 export async function perfilSteam(steamId: string): Promise<PerfilSteam> {
-  await obtenerUsuario(steamId);
+  const usuario = await obtenerUsuario(steamId);
   const enCache = cachePerfilSteam.get(steamId);
   if (enCache && enCache.vence > Date.now()) return enCache.datos;
   const datos = await obtenerPerfilSteam(steamId);
+  // En modo simulado las horas salen de la biblioteca simulada, igual que el rango de cuenta
+  // (con Steam real los dos datos vienen de GetOwnedGames y ya coinciden).
+  if (config.steamMock && usuario.horasTotalesSteam !== null) datos.horasTotales = Math.round(usuario.horasTotalesSteam);
   cachePerfilSteam.set(steamId, { datos, vence: Date.now() + MINUTOS_CACHE_PERFIL_STEAM * 60_000 });
   return datos;
 }
@@ -133,9 +139,16 @@ export async function sincronizarBiblioteca(steamId: string): Promise<ResultadoB
       ).map((v) => v.appId),
     );
     const juegos = biblioteca.juegos.filter((j) => enCatalogo.has(j.appId));
+    // Las horas totales cuentan todos los juegos de la cuenta, estén o no en el catálogo.
+    const horasTotales = biblioteca.publica
+      ? Math.round(biblioteca.juegos.reduce((total, j) => total + j.horasJugadas, 0) * 10) / 10
+      : null;
 
     await prisma.$transaction([
-      prisma.usuario.update({ where: { steamId }, data: { bibliotecaPublica: biblioteca.publica } }),
+      prisma.usuario.update({
+        where: { steamId },
+        data: { bibliotecaPublica: biblioteca.publica, ...(horasTotales !== null ? { horasTotalesSteam: horasTotales } : {}) },
+      }),
       prisma.usuarioXVideojuego.deleteMany({ where: { steamId } }),
       prisma.usuarioXVideojuego.createMany({
         data: juegos.map((j) => ({ steamId, appId: j.appId, horasJugadas: j.horasJugadas })),
@@ -151,7 +164,7 @@ export async function sincronizarBiblioteca(steamId: string): Promise<ResultadoB
 async function leerBibliotecaGuardada(steamId: string, desdeCache: boolean): Promise<ResultadoBiblioteca> {
   const usuario = await obtenerUsuario(steamId);
   const filas = await prisma.usuarioXVideojuego.findMany({
-    where: { steamId },
+    where: { steamId, videojuego: juegoVisible },
     include: { videojuego: { select: { nombre: true, imagenUrl: true } } },
     orderBy: { horasJugadas: 'desc' },
   });

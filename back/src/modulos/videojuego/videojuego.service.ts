@@ -2,6 +2,8 @@
 import { z } from 'zod';
 import { prisma } from '../../db.js';
 import { noEncontrado, solicitudInvalida } from '../../shared/errores.js';
+import { estaPorSalir } from '../lanzamientos/proximamente.js';
+import { juegoVisible } from '../catalogo/contenidoNoApto.js';
 
 export const videojuegoSchema = z.object({
   appId: z.coerce.number().int().positive('El AppID debe ser un entero positivo'),
@@ -19,17 +21,17 @@ export const incluirClasificacion = {
 } as const;
 
 type ConClasificacion = {
-  categorias: Array<{ categoria: { categoriaId: number; nombre: string } }>;
-  etiquetas: Array<{ etiqueta: { etiquetaId: number; nombre: string } }>;
+  categorias: Array<{ categoria: { categoriaId: number; nombre: string; oculta: boolean } }>;
+  etiquetas: Array<{ etiqueta: { etiquetaId: number; nombre: string; oculta: boolean } }>;
 };
 
-/** Aplana las tablas intermedias para la respuesta HTTP. */
+/** Aplana las tablas intermedias para la respuesta HTTP, sin las categorías y etiquetas ocultas. */
 export function aplanar<T extends ConClasificacion>(v: T) {
   const { categorias, etiquetas, ...resto } = v;
   return {
     ...resto,
-    categorias: categorias.map((c) => c.categoria),
-    etiquetas: etiquetas.map((e) => e.etiqueta),
+    categorias: categorias.flatMap(({ categoria: { oculta, ...c } }) => (oculta ? [] : [c])),
+    etiquetas: etiquetas.flatMap(({ etiqueta: { oculta, ...e } }) => (oculta ? [] : [e])),
   };
 }
 
@@ -44,7 +46,8 @@ async function validarReferencias(categoriaIds: number[], etiquetaIds: number[])
 
 export async function consultarVideojuego(appId: number) {
   const v = await prisma.videojuego.findUnique({ where: { appId }, include: incluirClasificacion });
-  if (!v) throw noEncontrado(`No existe un videojuego con AppID ${appId}`);
+  // Los juegos con contenido adulto se comportan como si no existieran
+  if (!v || v.contenidoAdulto) throw noEncontrado(`No existe un videojuego con AppID ${appId}`);
   const stats = await prisma.resena.aggregate({
     where: { appId },
     _avg: { calificacion: true },
@@ -52,6 +55,8 @@ export async function consultarVideojuego(appId: number) {
   });
   return {
     ...aplanar(v),
+    // true mientras el juego no salió: las reseñas quedan bloqueadas
+    proximamente: estaPorSalir(v),
     cantidadResenas: stats._count,
     promedioCalificacion: stats._avg.calificacion,
   };
@@ -106,8 +111,9 @@ export const nombreSchema = z.object({ nombre: z.string().trim().min(1, 'El nomb
 export const categorias = {
   listar: () =>
     prisma.categoria.findMany({
+      where: { oculta: false },
       orderBy: { nombre: 'asc' },
-      include: { _count: { select: { videojuegos: true } } },
+      include: { _count: { select: { videojuegos: { where: { videojuego: juegoVisible } } } } },
     }),
   crear: (nombre: string) => prisma.categoria.create({ data: { nombre } }),
   modificar: (id: number, nombre: string) => prisma.categoria.update({ where: { categoriaId: id }, data: { nombre } }),
@@ -117,8 +123,9 @@ export const categorias = {
 export const etiquetas = {
   listar: () =>
     prisma.etiqueta.findMany({
+      where: { oculta: false },
       orderBy: { nombre: 'asc' },
-      include: { _count: { select: { videojuegos: true } } },
+      include: { _count: { select: { videojuegos: { where: { videojuego: juegoVisible } } } } },
     }),
   crear: (nombre: string) => prisma.etiqueta.create({ data: { nombre } }),
   modificar: (id: number, nombre: string) => prisma.etiqueta.update({ where: { etiquetaId: id }, data: { nombre } }),

@@ -10,9 +10,10 @@ export class SteamNoDisponibleError extends ErrorApp {
 
 /**
  * fetch con tiempo máximo de espera configurable (5 s por defecto, RNF 1).
- * Cualquier timeout, error de red o status no exitoso se traduce en SteamNoDisponibleError.
+ * Cualquier timeout, error de red o status no exitoso se traduce en SteamNoDisponibleError,
+ * salvo los status de `aceptados` (p. ej. 401 cuando el dato es privado), que se devuelven tal cual.
  */
-export async function fetchSteam(url: string, init: RequestInit = {}): Promise<Response> {
+export async function fetchSteam(url: string, init: RequestInit = {}, aceptados: number[] = []): Promise<Response> {
   let res: Response;
   try {
     res = await fetch(url, { ...init, signal: AbortSignal.timeout(config.steamTimeoutMs) });
@@ -22,6 +23,6 @@ export async function fetchSteam(url: string, init: RequestInit = {}): Promise<R
       nombre === 'TimeoutError' ? `superó ${config.steamTimeoutMs} ms` : 'error de red',
     );
   }
-  if (!res.ok) throw new SteamNoDisponibleError(`HTTP ${res.status}`);
+  if (!res.ok && !aceptados.includes(res.status)) throw new SteamNoDisponibleError(`HTTP ${res.status}`);
   return res;
 }

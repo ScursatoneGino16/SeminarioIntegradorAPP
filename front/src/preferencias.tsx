@@ -28,11 +28,13 @@ export interface Preferencias {
 }
 
 const POR_DEFECTO: Preferencias = { fondo: 'noche', marco: 'ventana', avatarSteam: true, marcoSteam: true, fondoSteam: true };
-const CLAVE = 'resenas.preferencias';
+const CLAVE = 'steamvault.preferencias';
+// Clave anterior al cambio de nombre: se lee una vez para no perder lo elegido.
+const CLAVE_ANTERIOR = 'resenas.preferencias';
 
 function leer(): Preferencias {
   try {
-    const guardado = JSON.parse(localStorage.getItem(CLAVE) ?? '{}') as Partial<Preferencias>;
+    const guardado = JSON.parse(localStorage.getItem(CLAVE) ?? localStorage.getItem(CLAVE_ANTERIOR) ?? '{}') as Partial<Preferencias>;
     return {
       fondo: guardado.fondo && guardado.fondo in FONDOS ? guardado.fondo : POR_DEFECTO.fondo,
       marco: guardado.marco && guardado.marco in MARCOS ? guardado.marco : POR_DEFECTO.marco,
